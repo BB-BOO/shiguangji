@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { fetchDailySummary } from "@/lib/difyService";
 import { loadTodayMeals, loadDailySummaryCache, saveDailySummaryCache, getTodayKey, loadMemory } from "@/lib/storage";
@@ -11,6 +11,7 @@ import { DailyNutritionCard } from "@/components/home/DailyNutritionCard";
 import { DailyResultCard } from "@/components/home/DailyResultCard";
 import { FabAdd } from "@/components/home/FabAdd";
 import { HomeOverviewStats } from "@/components/home/HomeOverviewStats";
+import { seedBalancedWeek } from "@/lib/seedData";
 
 
 import { ProactiveCard } from "@/components/home/ProactiveCard";
@@ -47,6 +48,8 @@ export default function HomePage() {
   const [dailyRating, setDailyRating] = useState<boolean | undefined>(undefined);
 
   const [ready, setReady] = useState(false);
+  const [titleTapCount, setTitleTapCount] = useState(0);
+  const titleTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 认证检查
   useEffect(() => {
@@ -209,7 +212,21 @@ export default function HomePage() {
           </div>
           <div className="min-w-0 flex-1 pt-0.5">
             <div className="flex items-center gap-2">
-              <h1 className="text-[26px] font-bold tracking-tight whitespace-nowrap text-[var(--color-text)]">
+              <h1
+                className="text-[26px] font-bold tracking-tight whitespace-nowrap text-[var(--color-text)] select-none"
+                onClick={() => {
+                  if (titleTapTimer.current) clearTimeout(titleTapTimer.current);
+                  const next = titleTapCount + 1;
+                  setTitleTapCount(next);
+                  if (next >= 5) {
+                    setTitleTapCount(0);
+                    seedBalancedWeek();
+                    loadAndAnalyze();
+                  } else {
+                    titleTapTimer.current = setTimeout(() => setTitleTapCount(0), 2000);
+                  }
+                }}
+              >
                 食光记
               </h1>
               <Link
