@@ -45,11 +45,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const login = useCallback((_email: string, _password: string) => {
     setAuth(true);
     setIsAuthenticated(true);
   }, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const register = useCallback((_nickname: string, _email: string, _password: string) => {
     setAuth(true);
     setIsAuthenticated(true);

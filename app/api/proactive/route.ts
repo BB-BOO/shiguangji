@@ -1,6 +1,6 @@
 import { callDeepSeekWithTool } from "@/lib/aiClient";
 import { PROACTIVE_PROMPT } from "@/lib/prompts";
-import { detectTriggers, checkFrequencyGate, type ProactiveTrigger } from "@/lib/proactiveEngine";
+import { detectTriggers, checkFrequencyGate } from "@/lib/proactiveEngine";
 
 const PROACTIVE_TOOL = {
   name: "proactive_message",
