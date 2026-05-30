@@ -2,14 +2,6 @@
 
 import { useMemo } from "react";
 
-function getGreeting(): { emoji: string; text: string } {
-  const hour = new Date().getHours();
-  if (hour < 10) return { emoji: "☀️", text: "早上好" };
-  if (hour < 14) return { emoji: "🌤️", text: "中午好" };
-  if (hour < 18) return { emoji: "🌿", text: "下午好" };
-  return { emoji: "🌙", text: "晚上好" };
-}
-
 function getGreetingText(mealCount: number, hasSummary: boolean): string {
   const hour = new Date().getHours();
   if (mealCount === 0) {

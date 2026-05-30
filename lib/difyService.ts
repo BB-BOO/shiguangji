@@ -1,9 +1,7 @@
 import type {
-  DailySummaryInputs,
   DailySummaryResponse,
   MealAnalysisResponse,
   MealChatInputs,
-  WeeklyAnalysisInputs,
   WeeklyAnalysisResponse,
 } from "./types";
 

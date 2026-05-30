@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { loadTodayMeals, loadMemory, createMealId, addMemoryEntry, loadConversations, saveConversation, getTodayKey, loadMeals } from "@/lib/storage";
-import type { AssistantMessage, Conversation, MealRecord } from "@/lib/types";
+import type { AssistantMessage, Conversation } from "@/lib/types";
 import type { AgentContext } from "@/lib/agentTools";
 import { IconSparkle } from "@/components/ui/Icons";
 import { MarkdownText } from "@/components/ui/MarkdownText";
@@ -156,7 +156,7 @@ export default function AssistantPage() {
       if (!conversationId) setConversationId(conv.id);
       saveConversation(conv);
       setMessages(finalMessages);
-    } catch (e) {
+    } catch {
       setMessages([...initialMessages, { role: "ai", content: "回答生成失败，请重试", timestamp: new Date().toISOString() }]);
       setLastFailedMessage(text);
     } finally {

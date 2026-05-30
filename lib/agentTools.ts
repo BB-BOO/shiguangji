@@ -2,7 +2,7 @@
 // PRD 4.4.3 定义的 8 个 Agent 工具
 // localStorage 限制：工具不直接读 localStorage，而是从请求上下文（AgentContext）中取数据
 
-import type { DailyStatus, DailyTargetRange, MealRecord, NutritionEstimate, UserProfile } from "./types";
+import type { DailyTargetRange, MealRecord, NutritionEstimate, UserProfile } from "./types";
 import { computeDailyStatus } from "./nutritionStatus";
 
 // ---- 上下文：前端把用户数据打包传入 ----

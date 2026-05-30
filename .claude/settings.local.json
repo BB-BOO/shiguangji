@@ -76,7 +76,11 @@
       "Bash(cp -r \"my test\" \"my test-2.0\")",
       "Bash(git init *)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(git branch *)",
+      "Bash(git remote *)",
+      "Bash(git push *)",
+      "Bash(git config *)"
     ]
   }
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { loadMemory, deleteMemoryEntry } from "@/lib/storage";
-import type { MemoryEntry, MemoryDimension, MemoryStatus } from "@/lib/types";
+import type { MemoryEntry, MemoryDimension } from "@/lib/types";
 
 const DIMENSIONS: { key: MemoryDimension; icon: string; desc: string }[] = [
   { key: "身体数据", icon: "📐", desc: "身高、体重、年龄" },
@@ -42,8 +42,6 @@ function classifyEntries(entries: MemoryEntry[]): Record<string, MemoryEntry[]> 
 function calcPercentage(entries: MemoryEntry[]): number {
   const classified = classifyEntries(entries);
   const filled = Object.values(classified).filter((v) => v.length > 0).length;
-  // 身体数据和目标通常由注册信息填充，算半自动了解
-  const autoFilled = (classified["身体数据"].length > 0 ? 0 : 0) + (classified["目标"].length > 0 ? 0 : 0);
   return Math.round((filled / 5) * 100);
 }
 

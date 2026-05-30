@@ -8,7 +8,7 @@ import { createMealId, getTodayKey, loadTodayMeals, saveMeal, loadMemory } from 
 import type { MealAnalysisResponse, MealType } from "@/lib/types";
 import { MealNutritionCard } from "@/components/meal/MealNutritionCard";
 import { MealResultCard } from "@/components/meal/MealResultCard";
-import { IconBack, IconMeal, IconSparkle } from "@/components/ui/Icons";
+import { IconBack, IconSparkle } from "@/components/ui/Icons";
 import Link from "next/link";
 
 const MEAL_TYPES: MealType[] = ["早餐", "午餐", "晚餐", "加餐"];
@@ -177,7 +177,7 @@ export default function MealPage() {
         created_at: new Date().toISOString(),
       });
       setSaved(true);
-    } catch (e) {
+    } catch {
       setErrorMsg("保存失败，请重试");
     }
   };
@@ -201,10 +201,6 @@ export default function MealPage() {
 
   const handleMealTypeChange = (type: MealType) => {
     setMealType(type);
-    resetConversation();
-  };
-
-  const handleReset = () => {
     resetConversation();
   };
 
