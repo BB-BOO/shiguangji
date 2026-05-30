@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useAuth } from "@/components/AuthProvider";
 import {
   loadTodayMeals,
@@ -11,8 +12,11 @@ import {
   saveProactiveLog,
   dismissProactiveLog,
   createMealId,
+  loadConversations,
+  saveConversation,
+  getTodayKey,
 } from "@/lib/storage";
-import type { ProactiveLog } from "@/lib/types";
+import type { ProactiveLog, AssistantMessage } from "@/lib/types";
 
 export function ProactiveCard() {
   const { userProfile, dailyTarget } = useAuth();
@@ -75,6 +79,26 @@ export function ProactiveCard() {
         };
         saveProactiveLog(log);
         setMessage(log);
+
+        // 同时写入 AI 助手对话，作为食小光的主动消息
+        const aiMsg: AssistantMessage = {
+          role: "ai",
+          content: `💬 ${log.message}`,
+          timestamp: log.pushed_at,
+        };
+        const convs = loadConversations();
+        const todayConv = convs.find((c) => c.date === getTodayKey());
+        if (todayConv) {
+          todayConv.messages.push(aiMsg);
+          saveConversation(todayConv);
+        } else {
+          saveConversation({
+            id: createMealId(),
+            date: getTodayKey(),
+            message_preview: log.message.slice(0, 30),
+            messages: [aiMsg],
+          });
+        }
       }
     } catch {
       // 静默失败
@@ -95,7 +119,10 @@ export function ProactiveCard() {
   };
 
   return (
-    <div className="card-elevated relative overflow-hidden rounded-[22px] bg-gradient-to-r from-blue-50 to-emerald-50 p-4">
+    <Link
+      href="/assistant"
+      className="card-elevated relative overflow-hidden rounded-[22px] bg-gradient-to-r from-blue-50 to-emerald-50 p-4 block transition-all active:scale-[0.98]"
+    >
       <div className="flex items-start gap-3">
         <span className="mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-full bg-blue-100 text-sm">
           💬
@@ -104,7 +131,7 @@ export function ProactiveCard() {
           {message.message.length > 30 ? message.message.slice(0, 30) + "…" : message.message}
         </p>
         <button
-          onClick={handleDismiss}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDismiss(); }}
           className="flex-none rounded-full p-1 text-[var(--color-muted)] hover:bg-black/5 transition-colors"
         >
           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -112,6 +139,6 @@ export function ProactiveCard() {
           </svg>
         </button>
       </div>
-    </div>
+    </Link>
   );
 }

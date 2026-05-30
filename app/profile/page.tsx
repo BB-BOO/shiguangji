@@ -6,8 +6,6 @@ import { useAuth } from "@/components/AuthProvider";
 import type { GoalMode } from "@/lib/types";
 import Link from "next/link";
 import { IconBack } from "@/components/ui/Icons";
-import { AISettings } from "@/components/home/AISettings";
-import { MemoryManager } from "@/components/home/MemoryManager";
 
 const GOAL_MODES: { mode: GoalMode; desc: string; emoji: string; gradient: string }[] = [
   { mode: "减脂", desc: "降低体脂率", emoji: "🔥", gradient: "from-orange-400 to-rose-400" },
@@ -181,12 +179,6 @@ export default function ProfilePage() {
             </p>
           </section>
         )}
-
-        {/* AI Assistant Settings */}
-        <AISettings />
-
-        {/* Memory Management */}
-        <MemoryManager />
 
         {/* Logout */}
         <button

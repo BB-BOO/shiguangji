@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { loadMemory, deleteMemoryEntry } from "@/lib/storage";
 import type { MemoryEntry, MemoryDimension } from "@/lib/types";
 
@@ -148,12 +147,9 @@ export function MemoryManager() {
 
       {/* 底部引导 */}
       <div className="mt-4 rounded-xl bg-gray-50 px-4 py-3 text-center">
-        <Link
-          href="/assistant"
-          className="text-[12px] font-medium text-purple-600 hover:text-purple-700 transition-colors"
-        >
-          和食小光多聊聊，让它更懂你 →
-        </Link>
+        <p className="text-[12px] text-[var(--color-muted)]">
+          和食小光多聊聊，让它更懂你
+        </p>
       </div>
     </section>
   );

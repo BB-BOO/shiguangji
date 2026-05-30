@@ -9,6 +9,8 @@ import type { AssistantMessage, Conversation } from "@/lib/types";
 import type { AgentContext } from "@/lib/agentTools";
 import { IconSparkle } from "@/components/ui/Icons";
 import { MarkdownText } from "@/components/ui/MarkdownText";
+import { AISettings } from "@/components/home/AISettings";
+import { MemoryManager } from "@/components/home/MemoryManager";
 
 const EXAMPLE_QUESTIONS = [
   "我今天蛋白质够了吗",
@@ -26,6 +28,7 @@ export default function AssistantPage() {
   const [loading, setLoading] = useState(false);
   const [conversationId, setConversationId] = useState("");
   const [showHistory, setShowHistory] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [lastFailedMessage, setLastFailedMessage] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -189,15 +192,27 @@ export default function AssistantPage() {
           <IconSparkle className="h-4 w-4 text-emerald-500" />
           <span className="text-lg font-bold">食小光 · AI 助手</span>
         </div>
-        <button
-          onClick={() => { setConversations(loadConversations()); setShowHistory(!showHistory); }}
-          className="rounded-xl p-2 text-[var(--color-muted)] hover:bg-white/80 transition-colors"
-        >
-          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 8v4l2.5 2.5" />
-          </svg>
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => { setShowSettings(true); setShowHistory(false); }}
+            className="rounded-xl p-2 text-[var(--color-muted)] hover:bg-white/80 transition-colors"
+            title="AI 设置"
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </button>
+          <button
+            onClick={() => { setConversations(loadConversations()); setShowHistory(!showHistory); }}
+            className="rounded-xl p-2 text-[var(--color-muted)] hover:bg-white/80 transition-colors"
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 8v4l2.5 2.5" />
+            </svg>
+          </button>
+        </div>
       </header>
 
       {/* 历史列表 */}
@@ -312,6 +327,30 @@ export default function AssistantPage() {
           </button>
         </div>
       </div>
+
+      {/* 设置面板 */}
+      {showSettings && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+          <div className="absolute inset-0 bg-black/30" onClick={() => setShowSettings(false)} />
+          <div className="relative max-h-[85dvh] overflow-y-auto rounded-t-[24px] bg-[#f8faf7] animate-slide-up">
+            <div className="sticky top-0 z-10 flex items-center justify-between rounded-t-[24px] bg-[#f8faf7] px-5 pt-4 pb-2">
+              <h2 className="text-[15px] font-semibold">AI 助手设置</h2>
+              <button
+                onClick={() => setShowSettings(false)}
+                className="rounded-full p-1.5 text-[var(--color-muted)] hover:bg-gray-200/60 transition-colors"
+              >
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="px-5 pb-8 space-y-5">
+              <AISettings />
+              <MemoryManager />
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

@@ -5,7 +5,7 @@ import type { MealRecord, MealType, ProactiveConfig, ProactiveLog } from "./type
 
 // ---- 事件类型 ----
 
-export type ProactiveEventType = "漏餐关怀" | "营养素提醒" | "建议跟进" | "里程碑鼓励" | "偏好收集";
+export type ProactiveEventType = "漏餐关怀" | "营养素提醒" | "建议跟进" | "里程碑鼓励" | "偏好收集" | "日常问候" | "首次招呼";
 
 export interface ProactiveTrigger {
   type: ProactiveEventType;
@@ -56,6 +56,14 @@ export function detectTriggers(
   lastProactiveLogs: ProactiveLog[], // 近期推送记录
 ): ProactiveTrigger[] {
   const triggers: ProactiveTrigger[] = [];
+
+  // 0. 首次招呼（每天第一次打开时触发）
+  const todayFirstGreetPushed = lastProactiveLogs.some(
+    (l) => l.event_type === "首次招呼" && l.pushed_at.split("T")[0] === now.toISOString().split("T")[0],
+  );
+  if (!todayFirstGreetPushed) {
+    triggers.push({ type: "首次招呼", context: "用户今天第一次打开应用，食小光主动打招呼" });
+  }
 
   // 1. 漏餐关怀
   const mealHours: Array<{ type: MealType; hour: number; label: string }> = [
@@ -142,6 +150,20 @@ export function detectTriggers(
     const alreadyPushed = lastProactiveLogs.some((l) => l.event_type === "偏好收集");
     if (!alreadyPushed) {
       triggers.push({ type: "偏好收集", context: `用户记忆维度仅${memoryDimensionCount}项，偏好、习惯等维度待发现` });
+    }
+  }
+
+  // 6. 日常问候（时段性自然关怀）
+  const todayGreetingPushed = lastProactiveLogs.some(
+    (l) => l.event_type === "日常问候" && l.pushed_at.split("T")[0] === now.toISOString().split("T")[0],
+  );
+  if (!todayGreetingPushed && recentMeals.length >= 1) {
+    if (currentHour >= 8 && currentHour < 10) {
+      triggers.push({ type: "日常问候", context: "早晨时段，用户刚开启新的一天" });
+    } else if (currentHour >= 14 && currentHour < 16) {
+      triggers.push({ type: "日常问候", context: "午后时段，用户可能有些疲惫" });
+    } else if (currentHour >= 20 && currentHour < 22) {
+      triggers.push({ type: "日常问候", context: "晚间时段，用户即将结束一天" });
     }
   }
 

@@ -208,21 +208,23 @@ export default function HomePage() {
             <IconLeaf className="h-7 w-7" />
           </div>
           <div className="min-w-0 flex-1 pt-0.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <h1 className="text-[26px] font-bold tracking-tight text-[var(--color-text)]">
-                  食光记
-                </h1>
-                <span className="flex items-center gap-0.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">
-                  <IconSparkle className="h-3 w-3" />
-                  AI
-                </span>
-              </div>
-              <p className="text-xs text-[var(--color-muted)]">
-                {formatToday()}
-              </p>
+            <div className="flex items-center gap-2">
+              <h1 className="text-[26px] font-bold tracking-tight whitespace-nowrap text-[var(--color-text)]">
+                食光记
+              </h1>
+              <Link
+                href="/assistant"
+                className="flex items-center gap-0.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600 transition-all hover:bg-emerald-100 active:scale-95 shrink-0"
+              >
+                <IconSparkle className="h-3 w-3" />
+                AI
+              </Link>
             </div>
-            <p className="mt-1 text-sm text-[var(--color-muted)]">AI 饮食分析助手</p>
+            <div className="mt-1 flex items-center gap-2 text-sm text-[var(--color-muted)]">
+              <span>AI 饮食分析助手</span>
+              <span className="text-[10px] opacity-25">|</span>
+              <span className="text-xs opacity-60">{formatToday()}</span>
+            </div>
           </div>
         </div>
       </header>
@@ -241,9 +243,6 @@ export default function HomePage() {
         <NavItem href="/history" label="历史">
           <IconHistory className="h-4 w-4" />
         </NavItem>
-        <NavItem href="/assistant" label="AI助手">
-          <IconSparkle className="h-4 w-4" />
-        </NavItem>
         <NavItem href="/profile" label="我的">
           <IconTarget className="h-4 w-4" />
         </NavItem>
@@ -251,13 +250,13 @@ export default function HomePage() {
 
       <div className="space-y-4 pb-36">
         <ColdStartGuide />
+        <ProactiveCard />
         <HomeOverviewStats
           mainMealCount={meals.filter((m) => m.meal_type !== "加餐").length}
           snackCount={meals.filter((m) => m.meal_type === "加餐").length}
           nutrition={nutrition}
           summaryStatus={summary?.daily_status ?? null}
         />
-        <ProactiveCard />
 
         {meals.length === 0 ? (
           <div className="card-elevated flex flex-col items-center rounded-[22px] bg-gradient-to-br from-emerald-50/60 to-lime-50/40 px-6 py-12 text-center border border-dashed border-emerald-200/60">

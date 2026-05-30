@@ -57,10 +57,12 @@ export async function POST(req: Request) {
     // 取最高优先级的一条
     const priority: Record<string, number> = {
       "漏餐关怀": 1,
-      "营养素提醒": 2,
-      "建议跟进": 3,
-      "里程碑鼓励": 4,
-      "偏好收集": 5,
+      "首次招呼": 2,
+      "营养素提醒": 3,
+      "建议跟进": 4,
+      "里程碑鼓励": 5,
+      "偏好收集": 6,
+      "日常问候": 7,
     };
     triggers.sort((a, b) => (priority[a.type] || 9) - (priority[b.type] || 9));
     const selected = triggers[0];

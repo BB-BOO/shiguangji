@@ -42,37 +42,35 @@ export function AISettings() {
           <input
             type="range"
             min={0}
-            max={3}
+            max={5}
             value={config.daily_limit}
             onChange={(e) => update({ daily_limit: Number(e.target.value) })}
             className="w-full h-2 rounded-full appearance-none bg-gray-200 accent-emerald-500 cursor-pointer"
           />
           <div className="flex justify-between mt-1">
-            {[0, 1, 2, 3].map((n) => (
+            {[0, 1, 2, 3, 4, 5].map((n) => (
               <span key={n} className="text-[10px] text-[var(--color-muted)]">{n}</span>
             ))}
           </div>
         </div>
 
         {/* 免打扰时段 */}
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[13px] font-medium text-[var(--color-text)]">免打扰时段</p>
-            <p className="text-[11px] text-[var(--color-muted)]">此时段内不推送任何消息</p>
-          </div>
-          <div className="flex items-center gap-1.5 text-sm">
+        <div>
+          <p className="text-[13px] font-medium text-[var(--color-text)] mb-1">免打扰时段</p>
+          <p className="text-[11px] text-[var(--color-muted)] mb-2.5">此时段内不推送任何消息</p>
+          <div className="flex items-center gap-2">
             <input
               type="time"
               value={config.quiet_start}
               onChange={(e) => update({ quiet_start: e.target.value })}
-              className="rounded-xl border border-gray-200 bg-gray-50 px-2 py-2 text-sm outline-none"
+              className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none"
             />
-            <span className="text-xs text-[var(--color-muted)]">至</span>
+            <span className="text-xs text-[var(--color-muted)] shrink-0">至</span>
             <input
               type="time"
               value={config.quiet_end}
               onChange={(e) => update({ quiet_end: e.target.value })}
-              className="rounded-xl border border-gray-200 bg-gray-50 px-2 py-2 text-sm outline-none"
+              className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none"
             />
           </div>
         </div>

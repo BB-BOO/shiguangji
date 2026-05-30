@@ -216,7 +216,7 @@ export interface ProactiveConfig {
 
 export interface ProactiveLog {
   id: string;
-  event_type: "漏餐关怀" | "营养素提醒" | "建议跟进" | "里程碑鼓励" | "偏好收集";
+  event_type: "漏餐关怀" | "营养素提醒" | "建议跟进" | "里程碑鼓励" | "偏好收集" | "日常问候" | "首次招呼";
   message: string;
   pushed_at: string;
   dismissed: boolean;
