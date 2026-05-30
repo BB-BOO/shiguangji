@@ -1,0 +1,635 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  icon_type: emoji
+  mode: workflow
+  name: 食光记-每周分析
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/deepseek:0.0.15@725407927b04e236212083d20e92830d60fa944e42cd357ef6902c160414f6f1
+    version: null
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        attachment_image_file_size_limit: 2
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        file_upload_limit: 20
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: 1779380642496-source-1779380662249-target
+      selected: false
+      source: '1779380642496'
+      sourceHandle: source
+      target: '1779380662249'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: end
+      id: 1779380662249-source-1779382931062-target
+      selected: false
+      source: '1779380662249'
+      sourceHandle: source
+      target: '1779382931062'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        selected: false
+        title: 用户输入
+        type: start
+        variables:
+        - default: ''
+          hint: ''
+          label: goal_mode
+          options: []
+          placeholder: ''
+          required: false
+          type: text-input
+          variable: goal_mode
+        - default: ''
+          hint: ''
+          label: weight_kg
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: weight_kg
+        - default: ''
+          hint: ''
+          label: height_cm
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: height_cm
+        - default: ''
+          hint: ''
+          label: age
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: age
+        - default: ''
+          hint: ''
+          label: protein_target_min
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: protein_target_min
+        - default: ''
+          hint: ''
+          label: protein_target_max
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: protein_target_max
+        - allowed_file_extensions: []
+          allowed_file_types:
+          - image
+          allowed_file_upload_methods:
+          - local_file
+          - remote_url
+          default: ''
+          hide: false
+          hint: ''
+          label: carbohydrate_target_min
+          max_length: 5
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: carbohydrate_target_min
+        - default: ''
+          hint: ''
+          label: carbohydrate_target_max
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: carbohydrate_target_max
+        - default: ''
+          hint: ''
+          label: vegetable_target_min
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: vegetable_target_min
+        - default: ''
+          hint: ''
+          label: vegetable_target_max
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: vegetable_target_max
+        - default: ''
+          hint: ''
+          label: oil_target_min
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: oil_target_min
+        - default: ''
+          hint: ''
+          label: oil_target_max
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: oil_target_max
+        - default: ''
+          hint: ''
+          label: calories_target_min
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: calories_target_min
+        - default: ''
+          hint: ''
+          label: calories_target_max
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: calories_target_max
+        - default: ''
+          hint: ''
+          label: weekly_avg_protein_g
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: weekly_avg_protein_g
+        - default: ''
+          hint: ''
+          label: weekly_avg_carbohydrate_g
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: weekly_avg_carbohydrate_g
+        - default: ''
+          hint: ''
+          label: weekly_avg_vegetable_g
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: weekly_avg_vegetable_g
+        - default: ''
+          hint: ''
+          label: weekly_avg_oil_g
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: weekly_avg_oil_g
+        - default: ''
+          hint: ''
+          label: weekly_avg_calories_kcal
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: weekly_avg_calories_kcal
+        - default: ''
+          hint: ''
+          label: weekly_meal_records
+          options: []
+          placeholder: ''
+          required: false
+          type: text-input
+          variable: weekly_meal_records
+      height: 603
+      id: '1779380642496'
+      position:
+        x: -22.22703741585201
+        y: 164.4755302232968
+      positionAbsolute:
+        x: -22.22703741585201
+        y: 164.4755302232968
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        model:
+          completion_params:
+            response_format: json_object
+            temperature: 0.7
+            thinking: true
+          mode: chat
+          name: deepseek-v4-flash
+          provider: langgenius/deepseek/deepseek
+        prompt_config:
+          jinja2_variables: []
+        prompt_template:
+        - id: a1874cf1-5eb9-43aa-a3d5-8e1cb363067f
+          role: system
+          text: '角色定位
+
+
+            你是一名专业、自然、有真实交流感的 AI 营养分析助手。
+
+
+            你的任务：
+
+            根据用户提供的：
+
+            - 本周每日营养平均值（蛋白质/碳水/蔬菜/油脂/热量的周平均摄入量）
+
+            - 本周各营养素的每日目标范围（min ~ max）
+
+            - 用户个人信息（目标、年龄、体重、身高）
+
+            - 本周每天的饮食记录（自然语言文本，用于理解饮食结构）
+
+
+            完成本周整体饮食分析。
+
+
+            分析原则
+
+
+            只分析“本周整体饮食趋势与结构”。
+
+            不要逐日复盘，不要逐餐复述。
+
+
+            如果本周整体情况没有明显问题：
+
+            优先给予认可与正向反馈。
+
+
+            只有在以下趋势明显存在时，
+
+            才进行温和提醒：
+
+            - 热量持续超标
+
+            - 油脂持续偏高
+
+            - 蔬菜持续不足
+
+            - 蛋白质/碳水长期偏离目标
+
+            - 与用户目标明显冲突
+
+
+            状态判断原则（与每日总结保持一致）
+
+
+            蛋白质、蔬菜：
+
+            本周日均值明显高于目标上限 → “充足”
+
+            接近目标范围（min ~ max） → “达标”
+
+            明显低于目标下限 → “不足”
+
+
+            碳水、油脂、热量：
+
+            本周日均值明显高于目标上限 → “超标”
+
+            接近目标范围 → “均衡”
+
+            明显低于目标下限 → “不足”
+
+
+            diet_balance 描述：
+
+            本周整体饮食结构的均衡性。
+
+
+            目标吻合度评定
+
+
+            完美符合：所有营养素的周平均值均在目标范围内
+
+            基本符合：大部分营养素达标，少数轻微偏离
+
+            偏离目标：多个营养素明显偏离目标
+
+
+            feedback 输出规则
+
+
+            一句话简短自然的话：
+
+            - 不超过20字
+
+            - 不说教，不批评
+
+            - 不制造焦虑
+
+
+            analysis_text 输出规则
+
+
+            自然、温和、有交流感。
+
+            总结本周饮食特点、趋势、与目标匹配情况。
+
+            不要逐日复述，不要重复饮食记录原文。
+
+
+            下一周每日目标输出规则
+
+
+            根据本周平均表现和用户目标，调整下一周的每日目标范围：
+
+            - 如果某营养素本周“不足”或“低于目标”，适当提高下限
+
+            - 如果某营养素本周“超标”或“高于目标”，适当降低上限
+
+            - 如果“达标”，可维持或微调
+
+            - 范围要合理可行
+
+
+            输出要求
+
+
+            只输出 JSON。
+
+            不要输出 markdown。
+
+            不要输出额外解释。
+
+            严格符合 JSON Schema。
+
+            '
+        - id: ebd0ae22-7b1d-4bad-81b5-85146a8f2691
+          role: user
+          text: '{{#1779380642496.goal_mode#}}{{#1779380642496.weight_kg#}}{{#1779380642496.height_cm#}}{{#1779380642496.age#}}{{#1779380642496.protein_target_min#}}{{#1779380642496.protein_target_max#}}{{#1779380642496.carbohydrate_target_min#}}{{#1779380642496.carbohydrate_target_max#}}{{#1779380642496.vegetable_target_min#}}{{#1779380642496.vegetable_target_max#}}{{#1779380642496.oil_target_min#}}{{#1779380642496.oil_target_max#}}{{#1779380642496.calories_target_min#}}{{#1779380642496.calories_target_max#}}{{#1779380642496.weekly_avg_protein_g#}}
+
+            {{#1779380642496.weekly_avg_carbohydrate_g#}}{{#1779380642496.weekly_avg_vegetable_g#}}{{#1779380642496.weekly_avg_oil_g#}}{{#1779380642496.weekly_avg_calories_kcal#}}{{#1779380642496.weekly_meal_records#}}'
+        selected: true
+        structured_output:
+          schema:
+            properties:
+              analysis_text:
+                description: 自然语言分析，总结本周饮食特点和趋势，不逐日复述
+                type: string
+              feedback:
+                description: 一句话简短反馈，不超过20字
+                type: string
+              goal_match:
+                description: 本周整体饮食与用户目标的吻合程度
+                enum:
+                - 完美符合
+                - 基本符合
+                - 偏离目标
+                type: string
+              next_week_target:
+                description: 下一周每日营养目标的建议值（每日范围）
+                properties:
+                  calories_kcal:
+                    description: 每日热量目标范围（千卡）
+                    properties:
+                      max:
+                        description: 每日最高摄入量
+                        type: number
+                      min:
+                        description: 每日最低摄入量
+                        type: number
+                    required:
+                    - min
+                    - max
+                    type: object
+                  carbohydrate_g:
+                    description: 每日碳水目标范围（克）
+                    properties:
+                      max:
+                        description: 每日最高摄入量
+                        type: number
+                      min:
+                        description: 每日最低摄入量
+                        type: number
+                    required:
+                    - min
+                    - max
+                    type: object
+                  oil_g:
+                    description: 每日油脂目标范围（克）
+                    properties:
+                      max:
+                        description: 每日最高摄入量
+                        type: number
+                      min:
+                        description: 每日最低摄入量
+                        type: number
+                    required:
+                    - min
+                    - max
+                    type: object
+                  protein_g:
+                    description: 每日蛋白质目标范围（克）
+                    properties:
+                      max:
+                        description: 每日最高摄入量
+                        type: number
+                      min:
+                        description: 每日最低摄入量
+                        type: number
+                    required:
+                    - min
+                    - max
+                    type: object
+                  vegetable_g:
+                    description: 每日蔬菜目标范围（克）
+                    properties:
+                      max:
+                        description: 每日最高摄入量
+                        type: number
+                      min:
+                        description: 每日最低摄入量
+                        type: number
+                    required:
+                    - min
+                    - max
+                    type: object
+                required:
+                - protein_g
+                - carbohydrate_g
+                - vegetable_g
+                - oil_g
+                - calories_kcal
+                type: object
+              weekly_nutrition_status:
+                description: 本周各营养素的整体评级
+                properties:
+                  calorie_status:
+                    description: 热量摄入评级
+                    enum:
+                    - 超标
+                    - 均衡
+                    - 不足
+                    type: string
+                  carbohydrate_status:
+                    description: 碳水摄入评级
+                    enum:
+                    - 超标
+                    - 均衡
+                    - 不足
+                    type: string
+                  diet_balance:
+                    description: 本周整体膳食结构评级
+                    enum:
+                    - 较均衡
+                    - 一般
+                    - 失衡
+                    type: string
+                  oil_status:
+                    description: 油脂摄入评级
+                    enum:
+                    - 超标
+                    - 均衡
+                    - 不足
+                    type: string
+                  protein_status:
+                    description: 蛋白质摄入评级
+                    enum:
+                    - 充足
+                    - 达标
+                    - 不足
+                    type: string
+                  vegetable_status:
+                    description: 蔬菜摄入评级
+                    enum:
+                    - 充足
+                    - 达标
+                    - 不足
+                    type: string
+                required:
+                - protein_status
+                - vegetable_status
+                - carbohydrate_status
+                - oil_status
+                - calorie_status
+                - diet_balance
+                type: object
+            required:
+            - weekly_nutrition_status
+            - goal_match
+            - feedback
+            - analysis_text
+            - next_week_target
+            type: object
+        structured_output_enabled: true
+        title: LLM
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: '1779380662249'
+      position:
+        x: 362.8954754442482
+        y: 176.6836196446015
+      positionAbsolute:
+        x: 362.8954754442482
+        y: 176.6836196446015
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        outputs:
+        - value_selector:
+          - '1779380662249'
+          - structured_output
+          value_type: object
+          variable: structured_output
+        selected: false
+        title: 输出
+        type: end
+      height: 88
+      id: '1779382931062'
+      position:
+        x: 664.8954754442482
+        y: 176.6836196446015
+      positionAbsolute:
+        x: 664.8954754442482
+        y: 176.6836196446015
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    viewport:
+      x: 605.8759618678562
+      y: 62.766343992499
+      zoom: 0.8277532957121985
+  rag_pipeline_variables: []

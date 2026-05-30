@@ -1,0 +1,731 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  icon_type: emoji
+  mode: advanced-chat
+  name: 食光记-信息完整性验证+单餐分析
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/deepseek:0.0.15@725407927b04e236212083d20e92830d60fa944e42cd357ef6902c160414f6f1
+    version: null
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        attachment_image_file_size_limit: 2
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        file_upload_limit: 20
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        sourceType: start
+        targetType: llm
+      id: 1779337571979-llm
+      selected: false
+      source: '1779337571979'
+      sourceHandle: source
+      target: llm
+      targetHandle: target
+      type: custom
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: if-else
+      id: llm-source-1779369095859-target
+      source: llm
+      sourceHandle: source
+      target: '1779369095859'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: answer
+      id: 1779369095859-true-answer-target
+      source: '1779369095859'
+      sourceHandle: 'true'
+      target: answer
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: answer
+      id: 1779369095859-false-1779370629484-target
+      source: '1779369095859'
+      sourceHandle: 'false'
+      target: '1779370629484'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: answer
+        targetType: llm
+      id: answer-source-1779371153090-target
+      source: answer
+      sourceHandle: source
+      target: '1779371153090'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: answer
+      id: 1779371153090-source-1779371348768-target
+      source: '1779371153090'
+      sourceHandle: source
+      target: '1779371348768'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        selected: false
+        title: 用户输入
+        type: start
+        variables:
+        - default: ''
+          hint: ''
+          label: 用户目标
+          options: []
+          placeholder: ''
+          required: true
+          type: text-input
+          variable: goal_mode
+        - default: ''
+          hint: ''
+          label: 当前餐次
+          options: []
+          placeholder: ''
+          required: true
+          type: text-input
+          variable: meal_type
+        - hint: ''
+          label: 用户重量
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: weight_kg
+        - default: ''
+          hint: ''
+          label: 用户身高
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: height_cm
+        - default: ''
+          hint: ''
+          label: 用户年龄
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: age
+      height: 213
+      id: '1779337571979'
+      position:
+        x: 199.90657433097238
+        y: -629.2921205394998
+      positionAbsolute:
+        x: 199.90657433097238
+        y: -629.2921205394998
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        memory:
+          query_prompt_template: '{{#sys.query#}}
+
+            {{#sys.files#}}'
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: false
+            size: 10
+        model:
+          completion_params:
+            response_format: json_object
+            temperature: 0.7
+            thinking: false
+          mode: chat
+          name: deepseek-v4-flash
+          provider: langgenius/deepseek/deepseek
+        prompt_config:
+          jinja2_variables: []
+        prompt_template:
+        - edition_type: basic
+          id: 4cefe7dd-0476-455d-bdeb-32bb8f916b2a
+          role: system
+          text: '角色定位
+
+
+            你是一名专业、自然、有真实交流感的 AI 营养助手。
+
+
+            你的任务是判断用户当前提供的信息，是否已经足够进行单餐营养分析。
+
+
+            判断原则
+
+
+            营养分析通常至少需要：
+
+
+            - 较明确的食物类型
+
+            - 大致份量
+
+
+            “一份”“一碗”“两个”“半碗”等都属于有效份量描述。
+
+
+            不要求精确克重。
+
+
+            如果已有信息已经能够大致判断：
+
+
+            - 蛋白质情况
+
+            - 碳水情况
+
+            - 蔬菜情况
+
+            - 油脂情况
+
+
+            则认为信息足够。
+
+
+            如果某类食物营养差异较大，且会明显影响分析结果，可以继续确认具体类型。
+
+
+            例如：
+
+
+            - 包子（肉包 / 菜包）
+
+            - 面（汤面 / 炒面）
+
+            - 火锅
+
+            - 麻辣烫
+
+            - 沙拉
+
+
+            对话原则
+
+
+            像真人营养师聊天：
+
+
+            - 自然
+
+            - 温和
+
+            - 不机械
+
+            - 允许口语化
+
+
+            如果信息不足：
+
+
+            - 优先补充最关键的信息
+
+            - 份量优先级最高
+
+            - 不重复提问
+
+            - 一次最多追问两个问题
+
+
+            如果信息已经足够：
+
+
+            - 不继续追问
+
+            - 直接进入分析阶段
+
+
+            结合历史对话，避免重复询问用户已经提供的信息。
+
+
+            输出要求
+
+
+            - assistantMessage 不超过20字
+
+            - 只输出 JSON
+
+            - 不输出 markdown
+
+            - 不输出解释
+
+            - 严格符合 JSON Schema'
+        selected: false
+        structured_output:
+          schema:
+            properties:
+              assistantMessage:
+                description: 返回给用户的自然聊天回复。如果信息不足，则用于自然追问；如果信息已经足够，则用于自然进入分析阶段
+                type: string
+              isEnough:
+                description: 当前用户提供的信息是否已经足够进行营养分析
+                type: boolean
+            required:
+            - isEnough
+            - assistantMessage
+            type: object
+        structured_output_enabled: true
+        title: LLM
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: llm
+      position:
+        x: 489.43944488739965
+        y: -645.0446112949771
+      positionAbsolute:
+        x: 489.43944488739965
+        y: -645.0446112949771
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        answer: '{{#llm.structured_output.assistantMessage#}}'
+        selected: false
+        title: 直接回复
+        type: answer
+        variables: []
+      height: 103
+      id: answer
+      position:
+        x: 1097.9216081387958
+        y: -756.8022844031473
+      positionAbsolute:
+        x: 1097.9216081387958
+        y: -756.8022844031473
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: is
+            id: 676a7024-ffab-478a-9cfb-0f37df8da1af
+            value: 'true'
+            varType: object
+            variable_selector:
+            - llm
+            - structured_output
+            - isEnough
+          id: 'true'
+          logical_operator: and
+        selected: false
+        title: 条件分支
+        type: if-else
+      height: 148
+      id: '1779369095859'
+      position:
+        x: 795.9753747396194
+        y: -654.7793848272768
+      positionAbsolute:
+        x: 795.9753747396194
+        y: -654.7793848272768
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        answer: '{{#llm.structured_output.assistantMessage#}}'
+        selected: false
+        title: 直接回复 2
+        type: answer
+        variables: []
+      height: 103
+      id: '1779370629484'
+      position:
+        x: 1097.9216081387958
+        y: -592.2382183539413
+      positionAbsolute:
+        x: 1097.9216081387958
+        y: -592.2382183539413
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        memory:
+          query_prompt_template: '{{#sys.query#}}
+
+
+            {{#sys.files#}}'
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: false
+            size: 50
+        model:
+          completion_params:
+            response_format: json_object
+            temperature: 0.7
+            thinking: false
+          mode: chat
+          name: deepseek-v4-flash
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - id: 0fb45f1a-2ef6-4113-8e5e-72c4439f3ba3
+          role: system
+          text: '角色定位
+
+
+            你是一名专业、温和、懂生活的 AI 营养分析助手。
+
+
+            你的目标是：
+
+            帮助用户理解“这一餐本身”的饮食情况，
+
+            提供轻松、自然、不焦虑的营养分析体验。
+
+
+
+            任务说明
+
+
+            根据用户提供的单餐饮食信息，
+
+            结合可能提供的：
+
+
+            - 餐次
+
+            - 用户目标（减脂 / 增肌 / 普通）
+
+            - 身高
+
+            - 体重
+
+            - 年龄
+
+
+            完成单餐营养分析。
+
+
+            允许基于常见饮食经验进行合理估算，
+
+            无需绝对精准。
+
+
+
+            分析原则
+
+
+            只分析“这一餐本身”。不要扩展到：
+
+            - 全天饮食
+
+            - 长期营养
+
+            - 整体健康问题
+
+
+            单餐存在部分营养缺失属于正常情况，不要为了“全面均衡”而强行挑问题。
+
+
+            如果这一餐本身没有明显问题，优先认可其合理性。
+
+
+            只有在以下情况明显存在时，才认为需要提醒：
+
+            - 过油
+
+            - 高热量
+
+            - 能量明显不足
+
+            - 与用户目标明显冲突
+
+
+
+            feedback 输出规则
+
+
+            feedback 是一句简短自然的话：
+
+
+            - 不超过20字
+
+            - 不说教
+
+            - 不批评用户
+
+            - 不制造焦虑
+
+
+            如果无需提醒：
+
+            以鼓励、认可、轻松表达为主。
+
+
+            如果需要提醒：
+
+            仅对“下一餐”提供简单、可执行建议，
+
+            符合大学生日常饮食场景。
+
+
+
+            analysis_text 风格
+
+
+            使用自然、温和、生活化语气。
+
+
+            重点分析：
+
+
+            - 食物结构
+
+            - 大致营养组成
+
+            - 饱腹感
+
+            - 与目标的匹配程度
+
+
+            无明显问题时：
+
+            以认可和鼓励为主。
+
+
+            避免：
+
+
+            - 说教感
+
+            - 医生口吻
+
+            - 夸张健康风险
+
+            - 焦虑表达
+
+
+
+            输出要求
+
+
+            只输出 JSON。
+
+            不要输出 markdown。
+
+            不要输出额外解释。
+
+
+            【用户信息】
+
+            当前餐次：{{#1779337571979.meal_type#}}
+
+            用户目标：{{#1779337571979.goal_mode#}}
+
+            用户体重：{{#1779337571979.weight_kg#}}kg
+
+            用户身高：{{#1779337571979.height_cm#}}cm
+
+            用户年龄：{{#1779337571979.age#}}岁'
+        selected: false
+        structured_output:
+          schema:
+            properties:
+              analysis_text:
+                description: 对这一餐进行自然、温和、专业的分析说明。重点分析这一餐本身是否合理，不评价全天或长期饮食情况，不制造焦虑感。
+                type: string
+              feedback:
+                description: 对这一餐进行一句简短自然的评价，可以是正向认可或温和提醒。不强制提出建议，不使用说教语气。
+                type: string
+              meal_record:
+                description: 用一句自然语言简要记录这一餐的饮食内容，包括餐次、食物种类、大致分量、明显烹饪方式等。不包含任何分析，不超过15字。
+                type: string
+              nutrition_estimate:
+                properties:
+                  calories_kcal:
+                    type: number
+                  carbohydrate_g:
+                    type: number
+                  oil_g:
+                    type: number
+                  protein_g:
+                    type: number
+                  vegetable_g:
+                    type: number
+                required:
+                - protein_g
+                - carbohydrate_g
+                - oil_g
+                - vegetable_g
+                - calories_kcal
+                type: object
+              summary:
+                properties:
+                  calorie_warning:
+                    enum:
+                    - 是
+                    - 否
+                    type: string
+                  carbohydrate_content:
+                    enum:
+                    - 较多
+                    - 正常
+                    - 较少
+                    type: string
+                  oil_warning:
+                    enum:
+                    - 是
+                    - 否
+                    type: string
+                  protein_content:
+                    enum:
+                    - 较多
+                    - 正常
+                    - 较少
+                    type: string
+                  vegetable_content:
+                    enum:
+                    - 较多
+                    - 正常
+                    - 较少
+                    type: string
+                required:
+                - protein_content
+                - vegetable_content
+                - carbohydrate_content
+                - oil_warning
+                - calorie_warning
+                type: object
+            required:
+            - meal_record
+            - summary
+            - nutrition_estimate
+            - feedback
+            - analysis_text
+            type: object
+        structured_output_enabled: true
+        title: LLM 2
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: '1779371153090'
+      position:
+        x: 1432.1871612490652
+        y: -777.208991910602
+      positionAbsolute:
+        x: 1432.1871612490652
+        y: -777.208991910602
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        answer: '{{#1779371153090.structured_output#}}'
+        selected: false
+        title: 直接回复 3
+        type: answer
+        variables: []
+      height: 103
+      id: '1779371348768'
+      position:
+        x: 1768.015578450555
+        y: -794.8022844031473
+      positionAbsolute:
+        x: 1768.015578450555
+        y: -794.8022844031473
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    viewport:
+      x: -350.81397531433936
+      y: 849.1090594640675
+      zoom: 0.8705505632961242
+  rag_pipeline_variables: []

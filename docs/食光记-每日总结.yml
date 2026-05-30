@@ -1,0 +1,565 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  icon_type: emoji
+  mode: workflow
+  name: 食光记-每日总结
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/deepseek:0.0.15@725407927b04e236212083d20e92830d60fa944e42cd357ef6902c160414f6f1
+    version: null
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        attachment_image_file_size_limit: 2
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        file_upload_limit: 20
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: 1779380642496-source-1779380662249-target
+      source: '1779380642496'
+      sourceHandle: source
+      target: '1779380662249'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: end
+      id: 1779380662249-source-1779382931062-target
+      source: '1779380662249'
+      sourceHandle: source
+      target: '1779382931062'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        selected: false
+        title: 用户输入
+        type: start
+        variables:
+        - default: ''
+          hint: ''
+          label: goal_mode
+          options: []
+          placeholder: ''
+          required: false
+          type: text-input
+          variable: goal_mode
+        - default: ''
+          hint: ''
+          label: weight_kg
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: weight_kg
+        - default: ''
+          hint: ''
+          label: height_cm
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: height_cm
+        - default: ''
+          hint: ''
+          label: age
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: age
+        - default: ''
+          hint: ''
+          label: protein_target_min
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: protein_target_min
+        - default: ''
+          hint: ''
+          label: protein_target_max
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: protein_target_max
+        - allowed_file_extensions: []
+          allowed_file_types:
+          - image
+          allowed_file_upload_methods:
+          - local_file
+          - remote_url
+          default: ''
+          hide: false
+          hint: ''
+          label: carbohydrate_target_min
+          max_length: 5
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: carbohydrate_target_min
+        - default: ''
+          hint: ''
+          label: carbohydrate_target_max
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: carbohydrate_target_max
+        - default: ''
+          hint: ''
+          label: vegetable_target_min
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: vegetable_target_min
+        - default: ''
+          hint: ''
+          label: vegetable_target_max
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: vegetable_target_max
+        - default: ''
+          hint: ''
+          label: oil_target_min
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: oil_target_min
+        - default: ''
+          hint: ''
+          label: oil_target_max
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: oil_target_max
+        - default: ''
+          hint: ''
+          label: calories_target_min
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: calories_target_min
+        - default: ''
+          hint: ''
+          label: calories_target_max
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: calories_target_max
+        - default: ''
+          hint: ''
+          label: protein_g
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: protein_g
+        - default: ''
+          hint: ''
+          label: carbohydrate_g
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: carbohydrate_g
+        - default: ''
+          hint: ''
+          label: vegetable_g
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: vegetable_g
+        - default: ''
+          hint: ''
+          label: oil_g
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: oil_g
+        - default: ''
+          hint: ''
+          label: calories_kcal
+          options: []
+          placeholder: ''
+          required: false
+          type: number
+          variable: calories_kcal
+        - default: ''
+          hint: ''
+          label: meal_records
+          options: []
+          placeholder: ''
+          required: false
+          type: text-input
+          variable: meal_records
+      height: 603
+      id: '1779380642496'
+      position:
+        x: 34.22013939933396
+        y: 165.6836196446015
+      positionAbsolute:
+        x: 34.22013939933396
+        y: 165.6836196446015
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        model:
+          completion_params:
+            response_format: json_object
+            temperature: 0.7
+            thinking: true
+          mode: chat
+          name: deepseek-v4-flash
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - id: a1874cf1-5eb9-43aa-a3d5-8e1cb363067f
+          role: system
+          text: '你是一名专业、自然、有真实交流感的 AI 营养分析助手。
+
+            你的任务：
+
+            根据用户的每日饮食记录、营养累计数据、目标范围、身体信息，
+
+            分析用户今日整体饮食情况。
+
+            你只分析“今天整体饮食”，
+
+            不要逐餐重新点评。
+
+            你需要结合：
+
+            用户目标
+
+            每日目标范围
+
+            今日累计营养数据
+
+            全天饮食记录
+
+            判断今日整体饮食结构与目标匹配情况。
+
+            分析原则
+
+            只分析“今天整体饮食”。
+
+            不要扩展到：
+
+            长期营养问题
+
+            疾病风险
+
+            医疗建议
+
+            允许饮食存在正常波动，
+
+            不要为了“绝对均衡”而强行挑问题。
+
+            如果整体情况没有明显问题：
+
+            优先给予认可与正向反馈。
+
+            只有在以下情况明显存在时，
+
+            才进行温和提醒：
+
+            热量明显超标
+
+            油脂明显偏高
+
+            饮食结构明显失衡
+
+            与用户目标明显冲突
+
+            状态判断原则
+
+            蛋白质、蔬菜：
+
+            摄入明显高于目标范围 → “充足”
+
+            接近目标范围 → “达标”
+
+            明显低于目标范围 → “不足”
+
+            碳水、油脂、热量：
+
+            明显高于目标范围 → “超标”
+
+            接近目标范围 → “均衡”
+
+            明显低于目标范围 → “不足”
+
+            diet_balance 用于描述：
+
+            今日整体饮食结构
+
+            食物搭配情况
+
+            营养分布合理性
+
+            feedback 输出规则
+
+            feedback 是一句简短自然的话：
+
+            不超过20字
+
+            不说教
+
+            不批评用户
+
+            不制造焦虑
+
+            如果整体情况不错：
+
+            以鼓励、认可、轻松表达为主。
+
+            如果存在明显问题：
+
+            仅给出简单、可执行建议。
+
+            analysis_text 输出规则
+
+            analysis_text 需要：
+
+            自然
+
+            温和
+
+            有真实交流感
+
+            生活化
+
+            专业但不说教
+
+            重点分析：
+
+            今日整体饮食结构
+
+            营养分布情况
+
+            与用户目标的匹配程度
+
+            整体饮食趋势
+
+            不要：
+
+            逐餐复述
+
+            重复 meal_records 内容
+
+            输出数据列表
+
+            使用医疗化表达
+
+            制造焦虑
+
+            规则
+
+            meal_records 是全天饮食记录汇总，不是单餐
+
+            daily_total 为前端累计值，不需要重新计算
+
+            daily_target_range 是参考区间，不要求绝对精准
+
+            允许模糊营养分析
+
+            优先自然表达，而不是营养学术语
+
+            输出要求
+
+            只输出 JSON
+
+            不要 markdown
+
+            不要解释
+
+            不要输出额外文本
+
+            严格符合 JSON Schema
+
+            '
+        - id: 9b2ec99b-a3a7-4fb6-8095-fc8c566fe691
+          role: user
+          text: '{{#1779380642496.goal_mode#}}{{#1779380642496.weight_kg#}}{{#1779380642496.height_cm#}}{{#1779380642496.age#}}{{#1779380642496.protein_target_min#}}{{#1779380642496.protein_target_max#}}{{#1779380642496.carbohydrate_target_min#}}{{#1779380642496.carbohydrate_target_max#}}{{#1779380642496.vegetable_target_min#}}{{#1779380642496.vegetable_target_max#}}{{#1779380642496.oil_target_min#}}{{#1779380642496.oil_target_max#}}{{#1779380642496.calories_target_min#}}{{#1779380642496.calories_target_max#}}{{#1779380642496.protein_g#}}{{#1779380642496.carbohydrate_g#}}{{#1779380642496.vegetable_g#}}{{#1779380642496.oil_g#}}{{#1779380642496.calories_kcal#}}{{#1779380642496.meal_records#}}'
+        selected: true
+        structured_output:
+          schema:
+            properties:
+              analysis_text:
+                type: string
+              daily_nutrition_status:
+                properties:
+                  calorie_status:
+                    enum:
+                    - 超标
+                    - 均衡
+                    - 不足
+                    type: string
+                  carbohydrate_status:
+                    enum:
+                    - 超标
+                    - 均衡
+                    - 不足
+                    type: string
+                  diet_balance:
+                    enum:
+                    - 较均衡
+                    - 一般
+                    - 失衡
+                    type: string
+                  oil_status:
+                    enum:
+                    - 超标
+                    - 均衡
+                    - 不足
+                    type: string
+                  protein_status:
+                    enum:
+                    - 充足
+                    - 达标
+                    - 不足
+                    type: string
+                  vegetable_status:
+                    enum:
+                    - 充足
+                    - 达标
+                    - 不足
+                    type: string
+                required:
+                - protein_status
+                - vegetable_status
+                - carbohydrate_status
+                - oil_status
+                - calorie_status
+                - diet_balance
+                type: object
+              feedback:
+                type: string
+            required:
+            - daily_nutrition_status
+            - feedback
+            - analysis_text
+            type: object
+        structured_output_enabled: true
+        title: LLM
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: '1779380662249'
+      position:
+        x: 362.8954754442482
+        y: 176.6836196446015
+      positionAbsolute:
+        x: 362.8954754442482
+        y: 176.6836196446015
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        outputs:
+        - value_selector:
+          - '1779380662249'
+          - structured_output
+          value_type: object
+          variable: structured_output
+        selected: false
+        title: 输出
+        type: end
+      height: 88
+      id: '1779382931062'
+      position:
+        x: 664.8954754442482
+        y: 176.6836196446015
+      positionAbsolute:
+        x: 664.8954754442482
+        y: 176.6836196446015
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    viewport:
+      x: 368.0940765813613
+      y: 8.421073782440601
+      zoom: 0.7772031217786937
+  rag_pipeline_variables: []
