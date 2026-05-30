@@ -220,8 +220,8 @@ export default function HomePage() {
                 AI
               </Link>
             </div>
-            <div className="mt-1 flex items-center gap-2 text-sm text-[var(--color-muted)]">
-              <span>AI 饮食分析助手</span>
+            <div className="mt-1 flex items-center gap-2 text-sm text-[var(--color-muted)] whitespace-nowrap">
+              <span>AI饮食助手</span>
               <span className="text-[10px] opacity-25">|</span>
               <span className="text-xs opacity-60">{formatToday()}</span>
             </div>
