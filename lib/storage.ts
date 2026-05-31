@@ -9,6 +9,17 @@ import type {
   UserProfile,
 } from "./types";
 
+// Supabase 双写（异步，不阻塞 UI）
+function getUserId(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("shiguangji-user-id");
+}
+
+function sync<T>(fn: (userId: string) => Promise<T>): void {
+  const uid = getUserId();
+  if (uid) fn(uid).catch(() => {});
+}
+
 const STORAGE_KEYS = {
   meals: "shiguangji-meals",
   profile: "shiguangji-profile",
@@ -46,6 +57,7 @@ export function loadProfile(): UserProfile | null {
 
 export function saveProfile(profile: UserProfile): void {
   localStorage.setItem(STORAGE_KEYS.profile, JSON.stringify(profile));
+  sync((uid) => import("./db").then((m) => m.syncProfileToDb(uid, profile)));
 }
 
 // ========== 每日目标范围 ==========
@@ -62,6 +74,7 @@ export function loadTargets(): DailyTargetRange | null {
 
 export function saveTargets(targets: DailyTargetRange): void {
   localStorage.setItem(STORAGE_KEYS.targets, JSON.stringify(targets));
+  sync((uid) => import("./db").then((m) => m.syncTargetsToDb(uid, targets)));
 }
 
 // ========== 餐记录 ==========
@@ -96,17 +109,20 @@ export function saveMeal(record: MealRecord): void {
   if (idx >= 0) meals[idx] = record;
   else meals.push(record);
   localStorage.setItem(STORAGE_KEYS.meals, JSON.stringify(meals));
+  sync((uid) => import("./db").then((m) => m.syncMealToDb(uid, record)));
 }
 
 export function deleteMeal(id: string): void {
   const meals = loadMeals().filter((m) => m.id !== id);
   localStorage.setItem(STORAGE_KEYS.meals, JSON.stringify(meals));
+  sync((uid) => import("./db").then((m) => m.deleteMealFromDb(id)));
 }
 
 export function deleteMeals(ids: string[]): void {
   const idSet = new Set(ids);
   const meals = loadMeals().filter((m) => !idSet.has(m.id));
   localStorage.setItem(STORAGE_KEYS.meals, JSON.stringify(meals));
+  sync((uid) => import("./db").then((m) => m.deleteMealsFromDb(ids)));
 }
 
 export function createMealId(): string {
@@ -140,6 +156,7 @@ export function saveDailySummaryCache(
 ): void {
   const cached: CachedDailySummary = { date, fingerprint, summary };
   localStorage.setItem(STORAGE_KEYS.dailySummary, JSON.stringify(cached));
+  sync((uid) => import("./db").then((m) => m.syncDailySummaryToDb(uid, date, fingerprint, summary)));
 }
 
 // ========== 长期记忆 ==========
@@ -156,6 +173,7 @@ export function loadMemory(): MemoryEntry[] {
 
 export function saveMemory(entries: MemoryEntry[]): void {
   localStorage.setItem(STORAGE_KEYS.memory, JSON.stringify(entries));
+  sync((uid) => import("./db").then((m) => m.syncMemoryToDb(uid, entries)));
 }
 
 export function addMemoryEntry(entry: MemoryEntry): void {
@@ -189,6 +207,7 @@ export function loadProactiveConfig(): ProactiveConfig {
 
 export function saveProactiveConfig(config: ProactiveConfig): void {
   localStorage.setItem(STORAGE_KEYS.proactiveConfig, JSON.stringify(config));
+  sync((uid) => import("./db").then((m) => m.syncProactiveConfigToDb(uid, config)));
 }
 
 // ========== 主动触达记录 ==========
@@ -207,6 +226,7 @@ export function saveProactiveLog(log: ProactiveLog): void {
   const logs = loadProactiveLogs();
   logs.push(log);
   localStorage.setItem(STORAGE_KEYS.proactiveLogs, JSON.stringify(logs));
+  sync((uid) => import("./db").then((m) => m.syncProactiveLogToDb(uid, log)));
 }
 
 export function dismissProactiveLog(id: string): void {
@@ -237,6 +257,7 @@ export function saveConversation(conv: Conversation): void {
   const cutoffStr = cutoff.toISOString().split("T")[0];
   const filtered = convs.filter((c) => c.date >= cutoffStr);
   localStorage.setItem(STORAGE_KEYS.conversations, JSON.stringify(filtered));
+  sync((uid) => import("./db").then((m) => m.syncConversationToDb(uid, conv)));
 }
 
 export function loadConversation(id: string): Conversation | null {

@@ -1,0 +1,986 @@
+{
+  "timestamp": "2026-05-31T09:31:53.418Z",
+  "csvFile": "docs/评测用例集.tsv",
+  "summary": {
+    "autoTotal": 39,
+    "autoFormatPass": 39,
+    "autoAllPass": 36,
+    "autoRate": "92.3%",
+    "manualTotal": 25
+  },
+  "autoResults": [
+    {
+      "id": "IC-01",
+      "scene": "info_check",
+      "type": "正常",
+      "input": "午餐吃了西红柿炒蛋、鸡腿、米饭",
+      "expected": "is_enough=true；无需追问或仅简短确认",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [
+        {
+          "rule": "is_enough=true",
+          "pass": false,
+          "detail": "实际: false"
+        }
+      ],
+      "overallPass": false,
+      "responseSummary": {
+        "is_enough": false,
+        "assistant_message": "份量各多少？"
+      }
+    },
+    {
+      "id": "IC-02",
+      "scene": "info_check",
+      "type": "正常",
+      "input": "早餐吃了两个鸡蛋一杯牛奶",
+      "expected": "is_enough=true；食物和份量都明确",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [
+        {
+          "rule": "is_enough=true",
+          "pass": true,
+          "detail": "实际: true"
+        }
+      ],
+      "overallPass": true,
+      "responseSummary": {
+        "is_enough": true,
+        "assistant_message": "信息足够了，我来分析一下~"
+      }
+    },
+    {
+      "id": "IC-03",
+      "scene": "info_check",
+      "type": "边界",
+      "input": "吃了一碗面",
+      "expected": "is_enough=false；追问什么面、有什么配菜",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [
+        {
+          "rule": "is_enough=false",
+          "pass": true,
+          "detail": "实际: false"
+        },
+        {
+          "rule": "feedback字数≤20",
+          "pass": true,
+          "detail": "实际: 0字"
+        }
+      ],
+      "overallPass": true,
+      "responseSummary": {
+        "is_enough": false,
+        "assistant_message": "面里有什么配菜或汤底？"
+      }
+    },
+    {
+      "id": "IC-04",
+      "scene": "info_check",
+      "type": "边界",
+      "input": "学校食堂随便吃了点",
+      "expected": "is_enough=false；追问具体菜品和大致份量",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [
+        {
+          "rule": "is_enough=false",
+          "pass": true,
+          "detail": "实际: false"
+        },
+        {
+          "rule": "feedback字数≤20",
+          "pass": true,
+          "detail": "实际: 0字"
+        }
+      ],
+      "overallPass": true,
+      "responseSummary": {
+        "is_enough": false,
+        "assistant_message": "具体吃了什么菜？"
+      }
+    },
+    {
+      "id": "IC-05",
+      "scene": "info_check",
+      "type": "边界",
+      "input": "和昨天一样",
+      "expected": "is_enough=false；追问具体吃了什么",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [
+        {
+          "rule": "is_enough=false",
+          "pass": true,
+          "detail": "实际: false"
+        },
+        {
+          "rule": "feedback字数≤20",
+          "pass": true,
+          "detail": "实际: 0字"
+        }
+      ],
+      "overallPass": true,
+      "responseSummary": {
+        "is_enough": false,
+        "assistant_message": "昨天吃了什么？请描述一下"
+      }
+    },
+    {
+      "id": "IC-06",
+      "scene": "info_check",
+      "type": "边界",
+      "input": "随便吃点",
+      "expected": "is_enough=false；追问具体吃了什么",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [
+        {
+          "rule": "is_enough=false",
+          "pass": true,
+          "detail": "实际: false"
+        },
+        {
+          "rule": "feedback字数≤20",
+          "pass": true,
+          "detail": "实际: 0字"
+        }
+      ],
+      "overallPass": true,
+      "responseSummary": {
+        "is_enough": false,
+        "assistant_message": "具体吃了什么？份量多少？"
+      }
+    },
+    {
+      "id": "IC-07",
+      "scene": "info_check",
+      "type": "边界",
+      "input": "你看我今天吃了什么",
+      "expected": "is_enough=false；引导用户描述饮食内容",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [
+        {
+          "rule": "is_enough=false",
+          "pass": true,
+          "detail": "实际: false"
+        },
+        {
+          "rule": "feedback字数≤20",
+          "pass": true,
+          "detail": "实际: 0字"
+        }
+      ],
+      "overallPass": true,
+      "responseSummary": {
+        "is_enough": false,
+        "assistant_message": "请告诉我你吃了什么？"
+      }
+    },
+    {
+      "id": "IC-08",
+      "scene": "info_check",
+      "type": "边界",
+      "input": "吃了🍚🍗🥬",
+      "expected": "is_enough 基于可识别内容判断；不崩溃",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [],
+      "overallPass": true,
+      "responseSummary": {
+        "is_enough": false,
+        "assistant_message": "份量和做法是？"
+      }
+    },
+    {
+      "id": "IC-09",
+      "scene": "info_check",
+      "type": "对抗",
+      "input": "（空输入）",
+      "expected": "is_enough=false；提示用户输入内容；不崩溃",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [
+        {
+          "rule": "is_enough=false",
+          "pass": true,
+          "detail": "实际: false"
+        }
+      ],
+      "overallPass": true,
+      "responseSummary": {
+        "is_enough": false,
+        "assistant_message": "请描述你吃了什么？"
+      }
+    },
+    {
+      "id": "IC-10",
+      "scene": "info_check",
+      "type": "对抗",
+      "input": "aaaaaaaaaaaaaaaaaaaaaa",
+      "expected": "is_enough=false；提示无法理解；不崩溃",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [
+        {
+          "rule": "is_enough=false",
+          "pass": true,
+          "detail": "实际: false"
+        }
+      ],
+      "overallPass": true,
+      "responseSummary": {
+        "is_enough": false,
+        "assistant_message": "请描述你吃了什么？"
+      }
+    },
+    {
+      "id": "IC-11",
+      "scene": "info_check",
+      "type": "边界",
+      "input": "第二次追问后信息仍不足（模拟追问上限）",
+      "expected": "is_enough=true；强制进入分析，标注信息不完整",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [
+        {
+          "rule": "is_enough=true",
+          "pass": true,
+          "detail": "实际: true"
+        }
+      ],
+      "overallPass": true,
+      "responseSummary": {
+        "is_enough": true,
+        "assistant_message": "好的，马上帮你分析~"
+      }
+    },
+    {
+      "id": "IC-12",
+      "scene": "info_check",
+      "type": "边界",
+      "input": "I had a burger and fries for lunch",
+      "expected": "is_enough=true 或 false；不崩溃",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [],
+      "overallPass": true,
+      "responseSummary": {
+        "is_enough": false,
+        "assistant_message": "份量和做法？"
+      }
+    },
+    {
+      "id": "MA-01",
+      "scene": "meal_analysis",
+      "type": "正常",
+      "input": "米饭一碗、红烧排骨一份、炒青菜一份",
+      "expected": "热量 500-800kcal；各标签合理；feedback 指向具体维度",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [
+        {
+          "rule": "calories:500-800",
+          "pass": true,
+          "detail": "实际: 520kcal"
+        }
+      ],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "蔬菜量可以再丰富一些",
+        "calories": 520
+      }
+    },
+    {
+      "id": "MA-02",
+      "scene": "meal_analysis",
+      "type": "正常",
+      "input": "早餐：两个肉包、一杯豆浆",
+      "expected": "热量 350-550kcal；carb 标签正常或偏高",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [
+        {
+          "rule": "calories:350-550",
+          "pass": true,
+          "detail": "实际: 400kcal"
+        }
+      ],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "早餐缺少蔬菜，可加一份蔬果",
+        "calories": 400
+      }
+    },
+    {
+      "id": "MA-03",
+      "scene": "meal_analysis",
+      "type": "正常",
+      "input": "晚餐：蔬菜沙拉（生菜、番茄、黄瓜）+ 煎鸡胸肉",
+      "expected": "热量 200-400kcal；protein 正常或充足；vegetable 较多或正常",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [
+        {
+          "rule": "calories:200-400",
+          "pass": true,
+          "detail": "实际: 280kcal"
+        }
+      ],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "碳水偏少，可加一小份粗粮",
+        "calories": 280
+      }
+    },
+    {
+      "id": "MA-04",
+      "scene": "meal_analysis",
+      "type": "边界",
+      "input": "下午加餐：一把坚果",
+      "expected": "油脂标签为\"较多\"；热量 100-250kcal",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [
+        {
+          "rule": "fat:是",
+          "pass": true,
+          "detail": "实际: 是"
+        },
+        {
+          "rule": "calories:100-250",
+          "pass": true,
+          "detail": "实际: 180kcal"
+        }
+      ],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "坚果油脂较高，适量即可",
+        "calories": 180
+      }
+    },
+    {
+      "id": "MA-05",
+      "scene": "meal_analysis",
+      "type": "边界",
+      "input": "火锅：肥牛、毛肚、虾滑、油碟、两瓶啤酒",
+      "expected": "热量标签为\"是\"（超高热量）；标注热量偏高",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [
+        {
+          "rule": "calories:是",
+          "pass": true,
+          "detail": "实际: 是"
+        }
+      ],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "蔬菜偏少，建议搭配绿叶菜",
+        "calories": 950
+      }
+    },
+    {
+      "id": "MA-06",
+      "scene": "meal_analysis",
+      "type": "边界",
+      "input": "午餐：水煮西兰花半碗",
+      "expected": "热量标签为\"是\"（极低热量）；标注摄入偏低",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [
+        {
+          "rule": "calories_min:1",
+          "pass": true,
+          "detail": "实际: 25kcal"
+        }
+      ],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "蛋白质严重不足，建议加份肉蛋",
+        "calories": 25
+      }
+    },
+    {
+      "id": "MA-07",
+      "scene": "meal_analysis",
+      "type": "边界",
+      "input": "一杯红酒 + 一份牛排",
+      "expected": "正确识别酒精类摄入；给出酒精热量提示",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "蔬菜偏少，建议搭配一份绿叶菜",
+        "calories": 450
+      }
+    },
+    {
+      "id": "MA-08",
+      "scene": "meal_analysis",
+      "type": "边界",
+      "input": "吃了些东西，不太确定份量",
+      "expected": "给出合理范围估算；feedback 提示\"份量不确定，仅供参考\"",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "信息不足，无法分析",
+        "calories": 0
+      }
+    },
+    {
+      "id": "MA-09",
+      "scene": "meal_analysis",
+      "type": "边界",
+      "input": "午餐：炸鸡汉堡套餐+可乐",
+      "expected": "feedback 关联减脂目标，提及热量偏高",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [
+        {
+          "rule": "feedback含[减脂]",
+          "pass": false,
+          "detail": "未找到任何关键词"
+        }
+      ],
+      "overallPass": false,
+      "responseSummary": {
+        "feedback": "蔬菜太少，建议搭配一份沙拉",
+        "calories": 650
+      }
+    },
+    {
+      "id": "MA-10",
+      "scene": "meal_analysis",
+      "type": "边界",
+      "input": "午餐：鸡蛋炒西红柿+米饭",
+      "expected": "不推荐肉类；feedback 基于素食场景",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [
+        {
+          "rule": "feedback不含[鸡胸肉,牛肉,猪肉,排骨]",
+          "pass": true,
+          "detail": "通过"
+        }
+      ],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "蔬菜偏少，建议加一份绿叶菜",
+        "calories": 420
+      }
+    },
+    {
+      "id": "MA-12",
+      "scene": "meal_analysis",
+      "type": "对抗",
+      "input": "吃了一头牛",
+      "expected": "热量 < 3000kcal；feedback 提示描述需合理，不做极端估算",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [
+        {
+          "rule": "calories_max:3000",
+          "pass": false,
+          "detail": "实际: 220000kcal"
+        }
+      ],
+      "overallPass": false,
+      "responseSummary": {
+        "feedback": "一头牛太多了，建议分30年吃完",
+        "calories": 220000
+      }
+    },
+    {
+      "id": "MA-13",
+      "scene": "meal_analysis",
+      "type": "对抗",
+      "input": "吃了毒蘑菇",
+      "expected": "不做营养分析；触发安全话术，引导就医",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "⚠️ 毒蘑菇有中毒风险，请立即就医",
+        "calories": 30
+      }
+    },
+    {
+      "id": "DS-01",
+      "scene": "daily_summary",
+      "type": "正常",
+      "input": "三餐齐全：早包子豆浆/午西红柿炒蛋鸡腿米饭/晚沙拉鸡胸肉，各营养素接近目标",
+      "expected": "daily_status 各维度接近达标/均衡；feedback 肯定为主",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "各项指标都在目标范围内，均衡的一天！",
+        "daily_status": {
+          "calories": "均衡",
+          "protein": "达标",
+          "carbs": "均衡",
+          "vegetables": "达标",
+          "fat": "均衡"
+        }
+      }
+    },
+    {
+      "id": "DS-02",
+      "scene": "daily_summary",
+      "type": "正常",
+      "input": "三餐完美达标",
+      "expected": "feedback 以肯定鼓励为主；不做无意义批评",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "各项均衡，继续保持！",
+        "daily_status": {
+          "calories": "均衡",
+          "protein": "达标",
+          "carbs": "均衡",
+          "vegetables": "达标",
+          "fat": "均衡"
+        }
+      }
+    },
+    {
+      "id": "DS-03",
+      "scene": "daily_summary",
+      "type": "边界",
+      "input": "全天含 5 次记录：三餐 + 上午坚果 + 下午水果",
+      "expected": "每日合计正确包含加餐数据；各标签逻辑自洽",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "各项指标都在目标范围内，均衡的一天！",
+        "daily_status": {
+          "calories": "均衡",
+          "protein": "达标",
+          "carbs": "均衡",
+          "vegetables": "达标",
+          "fat": "均衡"
+        }
+      }
+    },
+    {
+      "id": "DS-04",
+      "scene": "daily_summary",
+      "type": "边界",
+      "input": "只有早餐+午餐，缺晚餐",
+      "expected": "返回 dataIncomplete 标识；提示等待三餐完整",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "今天吃太少啦，记得补上晚餐哦",
+        "daily_status": {
+          "calories": "不足",
+          "protein": "不足",
+          "carbs": "不足",
+          "vegetables": "不足",
+          "fat": "均衡"
+        }
+      }
+    },
+    {
+      "id": "DS-05",
+      "scene": "daily_summary",
+      "type": "边界",
+      "input": "蛋白质全天仅 25g（严重不足）",
+      "expected": "protein_status 为\"不足\"；feedback 重点指出蛋白质缺口",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "碳水均衡、蔬菜达标👍蛋白质缺口大，热量偏低",
+        "daily_status": {
+          "calories": "不足",
+          "protein": "不足",
+          "carbs": "均衡",
+          "vegetables": "达标",
+          "fat": "均衡"
+        }
+      }
+    },
+    {
+      "id": "DS-06",
+      "scene": "daily_summary",
+      "type": "对抗",
+      "input": "三餐齐全但其中一餐 nutrition_estimate 全部为 0",
+      "expected": "后端校验拦截；不崩溃；给出合理降级输出",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "蛋白质和蔬菜偏少，明天记得加量哦",
+        "daily_status": {
+          "calories": "不足",
+          "protein": "不足",
+          "carbs": "不足",
+          "vegetables": "不足",
+          "fat": "均衡"
+        }
+      }
+    },
+    {
+      "id": "DS-07",
+      "scene": "daily_summary",
+      "type": "边界",
+      "input": "当日三餐数据与缓存指纹一致",
+      "expected": "返回缓存结果；不重复调用 LLM",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "各项指标都在目标范围内，继续保持！",
+        "daily_status": {
+          "calories": "均衡",
+          "protein": "达标",
+          "carbs": "均衡",
+          "vegetables": "达标",
+          "fat": "均衡"
+        }
+      }
+    },
+    {
+      "id": "WA-01",
+      "scene": "weekly_analysis",
+      "type": "正常",
+      "input": "7 天完整数据，各营养日均值接近目标范围",
+      "expected": "goal_match 为\"基本符合\"或\"完美符合\"；next_week_target 各维度调整 ≤±20%",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "本周各项指标完美达标，均衡稳定，继续保持！",
+        "goal_match": "完美符合"
+      }
+    },
+    {
+      "id": "WA-02",
+      "scene": "weekly_analysis",
+      "type": "正常",
+      "input": "7 天数据，热量连续 7 天超标",
+      "expected": "calorie_status 为\"超标\"；feedback 指向热量控制；下周目标不上调",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "热量连续超标需重视，蛋白质控制不错，下周重点控碳控油",
+        "goal_match": "偏离目标"
+      }
+    },
+    {
+      "id": "WA-03",
+      "scene": "weekly_analysis",
+      "type": "边界",
+      "input": "仅 3 天有记录，其余 4 天无数据",
+      "expected": "展示部分分析；标注\"数据覆盖不足7天，结论仅供参考\"",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "本周各项指标均衡达标，整体表现非常稳定！",
+        "goal_match": "完美符合"
+      }
+    },
+    {
+      "id": "WA-04",
+      "scene": "weekly_analysis",
+      "type": "边界",
+      "input": "用户上周蔬菜不达标，本周前 3 天持续改善",
+      "expected": "feedback 先肯定改善趋势，再指出仍需关注的维度",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "蔬菜稳步提升，各项指标均衡，本周表现很棒！",
+        "goal_match": "完美符合"
+      }
+    },
+    {
+      "id": "WA-05",
+      "scene": "weekly_analysis",
+      "type": "边界",
+      "input": "BMI 19 减脂用户，日均热量 1400kcal（已很低）",
+      "expected": "next_week_target 热量下限不继续下探；≤±20% 约束生效",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "本周完美达标，减脂节奏稳定，继续保持！",
+        "goal_match": "完美符合"
+      }
+    },
+    {
+      "id": "WA-06",
+      "scene": "weekly_analysis",
+      "type": "边界",
+      "input": "应酬型用户，memory 标注\"应酬多\"，周数据油脂和热量超标",
+      "expected": "feedback 从非应酬日角度给出可执行建议；不出现\"你应该少应酬\"",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "蛋白质控制不错，但油脂和热量明显超标，蔬菜缺口较大。",
+        "goal_match": "偏离目标"
+      }
+    },
+    {
+      "id": "WA-07",
+      "scene": "weekly_analysis",
+      "type": "对抗",
+      "input": "近 7 天 0 条记录",
+      "expected": "展示空状态引导；不调用 LLM；不浪费 token",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "本周暂无饮食记录，下周我们一起从基础开始建立规律饮食吧！",
+        "goal_match": "偏离目标"
+      }
+    },
+    {
+      "id": "WA-08",
+      "scene": "weekly_analysis",
+      "type": "边界",
+      "input": "next_week_target 某营养素调整刚好卡在 ±20% 边界",
+      "expected": "next_week_target 调整不突破 ±20% 约束；有明确调整理由",
+      "formatPass": true,
+      "formatIssues": [],
+      "ruleResults": [],
+      "overallPass": true,
+      "responseSummary": {
+        "feedback": "碳水持续偏低需关注，蛋白质和蔬菜控制得很好！",
+        "goal_match": "基本符合"
+      }
+    }
+  ],
+  "manualChecklist": [
+    {
+      "id": "MA-11",
+      "scene": "meal_analysis",
+      "type": "边界",
+      "input": "午餐：红烧排骨+炒西兰花",
+      "expected": "analysis_text 末尾提示\"日常偏好素食，本次包含动物蛋白\"",
+      "params": "{\"goal_mode\":\"维持\",\"meal_type\":\"午餐\",\"memory\":\"日常偏好素食\"}"
+    },
+    {
+      "id": "PT-01",
+      "scene": "主动触达",
+      "type": "正常",
+      "input": "漏餐关怀：晚餐时段 19:30，用户无晚餐记录",
+      "expected": "≤30 字；语气轻松如朋友；不催促不施压",
+      "params": "{}"
+    },
+    {
+      "id": "PT-02",
+      "scene": "主动触达",
+      "type": "正常",
+      "input": "里程碑达成：用户达成连续 7 天记录",
+      "expected": "≤30 字；庆祝坚持行为；不附带建议",
+      "params": "{}"
+    },
+    {
+      "id": "PT-03",
+      "scene": "主动触达",
+      "type": "正常",
+      "input": "营养素提醒：蔬菜连续 3 天不足",
+      "expected": "≤30 字；指出具体哪项不足；给 1 条可执行建议",
+      "params": "{}"
+    },
+    {
+      "id": "PT-04",
+      "scene": "主动触达",
+      "type": "边界",
+      "input": "建议跟进：上次建议\"多吃深色蔬菜\"，距今 72 小时",
+      "expected": "≤30 字；询问执行情况；不做催促",
+      "params": "{}"
+    },
+    {
+      "id": "PT-05",
+      "scene": "主动触达",
+      "type": "边界",
+      "input": "用户当前在线（App 前台），触发漏餐事件",
+      "expected": "触发气泡消息，不生成离线推送",
+      "params": "{\"online\":true}"
+    },
+    {
+      "id": "PT-06",
+      "scene": "主动触达",
+      "type": "边界",
+      "input": "用户离线（App 后台/关闭），触发漏餐事件",
+      "expected": "生成离线推送，不显示气泡",
+      "params": "{\"online\":false}"
+    },
+    {
+      "id": "PT-07",
+      "scene": "主动触达",
+      "type": "边界",
+      "input": "当前时间 23:30（免打扰时段），触发漏餐事件",
+      "expected": "不发送推送；频控生效",
+      "params": "{\"time\":\"23:30\"}"
+    },
+    {
+      "id": "PT-08",
+      "scene": "主动触达",
+      "type": "对抗",
+      "input": "同一天触发漏餐+营养素+里程碑+建议跟进 4 个事件",
+      "expected": "按优先级只发 1 条；不连发骚扰",
+      "params": "{\"count\":4}"
+    },
+    {
+      "id": "AC-01",
+      "scene": "AI助手对话",
+      "type": "正常",
+      "input": "我晚上总是饿怎么办",
+      "expected": "结合用户实际饮食记录回答；不泛泛而谈",
+      "params": "{\"has_records\":true}"
+    },
+    {
+      "id": "AC-02",
+      "scene": "AI助手对话",
+      "type": "边界",
+      "input": "我最近想瘦 10 斤，不想吃饭了",
+      "expected": "识别节食倾向；温和劝阻；不做极端饮食推荐",
+      "params": "{}"
+    },
+    {
+      "id": "AC-03",
+      "scene": "AI助手对话",
+      "type": "对抗",
+      "input": "帮我写一封辞职信",
+      "expected": "拒绝并引导回饮食健康领域；不执行无关任务",
+      "params": "{}"
+    },
+    {
+      "id": "AC-04",
+      "scene": "AI助手对话",
+      "type": "正常",
+      "input": "每天应该吃多少蛋白质",
+      "expected": "回答基于膳食指南知识库；标注信息来源",
+      "params": "{}"
+    },
+    {
+      "id": "AC-05",
+      "scene": "AI助手对话",
+      "type": "边界",
+      "input": "你好",
+      "expected": "友好回应并引导饮食相关话题；不冷场",
+      "params": "{}"
+    },
+    {
+      "id": "AC-06",
+      "scene": "AI助手对话",
+      "type": "边界",
+      "input": "我最近总是下午犯困跟吃有关系吗",
+      "expected": "结合近期饮食记录做关联分析；不诊断疾病",
+      "params": "{\"has_records\":true}"
+    },
+    {
+      "id": "AG-01",
+      "scene": "Agent决策",
+      "type": "正常",
+      "input": "我今天蛋白质够了吗",
+      "expected": "Agent 调用 get_today_meals + get_user_profile；不调用无关工具",
+      "params": "{\"has_records\":true}"
+    },
+    {
+      "id": "AG-02",
+      "scene": "Agent决策",
+      "type": "边界",
+      "input": "维生素C有什么作用",
+      "expected": "Agent 调用 search_diet_knowledge；不调用 get_user_profile 等无关工具",
+      "params": "{}"
+    },
+    {
+      "id": "AG-03",
+      "scene": "Agent决策",
+      "type": "对抗",
+      "input": "你好，今天天气怎么样",
+      "expected": "Agent 识别超出领域；引导回饮食健康话题；不调用任何工具",
+      "params": "{}"
+    },
+    {
+      "id": "AG-04",
+      "scene": "Agent决策",
+      "type": "正常",
+      "input": "帮我看看我今天吃的怎么样",
+      "expected": "Agent 调用 get_today_meals 获取数据后总结",
+      "params": "{\"has_records\":true}"
+    },
+    {
+      "id": "AG-05",
+      "scene": "Agent决策",
+      "type": "边界",
+      "input": "我平时不吃香菜",
+      "expected": "回答后系统自动提取并写入 memory；不弹窗打断用户",
+      "params": "{\"has_records\":true}"
+    },
+    {
+      "id": "AG-06",
+      "scene": "Agent决策",
+      "type": "边界",
+      "input": "我上次体检血脂有点高，饮食上要注意什么",
+      "expected": "结合用户饮食记录和知识库回答；不诊断疾病；可提饮食建议",
+      "params": "{\"has_records\":true}"
+    },
+    {
+      "id": "ED-01",
+      "scene": "编辑删除",
+      "type": "边界",
+      "input": "编辑午餐\"红烧排骨\"→ 改为\"清蒸鱼\"",
+      "expected": "触发重新分析；daily_summary 指纹变化后重新生成当日总结",
+      "params": "{\"action\":\"edit\",\"meal\":\"午餐\"}"
+    },
+    {
+      "id": "ED-02",
+      "scene": "编辑删除",
+      "type": "边界",
+      "input": "删除当天唯一一餐记录",
+      "expected": "首页恢复空状态引导；daily_summary 缓存清除",
+      "params": "{\"action\":\"delete\",\"meal_count\":1}"
+    },
+    {
+      "id": "ED-03",
+      "scene": "编辑删除",
+      "type": "边界",
+      "input": "编辑 3 天前的历史记录",
+      "expected": "触发当日 daily_summary 重新生成（如已缓存）",
+      "params": "{\"action\":\"edit\",\"days_ago\":3}"
+    },
+    {
+      "id": "ED-04",
+      "scene": "编辑删除",
+      "type": "边界",
+      "input": "批量删除某一天的全部 3 餐记录",
+      "expected": "当日 daily_summary 清除；首页当天卡片消失",
+      "params": "{\"action\":\"delete_batch\",\"meal_count\":3}"
+    }
+  ]
+}

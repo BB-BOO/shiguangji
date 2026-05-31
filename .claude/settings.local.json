@@ -80,7 +80,18 @@
       "Bash(git branch *)",
       "Bash(git remote *)",
       "Bash(git push *)",
-      "Bash(git config *)"
+      "Bash(git config *)",
+      "Bash(git checkout *)",
+      "Bash(Get-Service sshd *)",
+      "Bash(Select-Object Name,Status,StartType)",
+      "Bash(grep -n '\\\\\\\\\\\\\\\\\\\\[')",
+      "Bash(grep -n '\\\\\\\\\\\\\\\\\\\\[' \"docs/食光记-PRD-最终版.md\")",
+      "Bash(grep -n '\\\\\\\\\\\\\\\\\\\\[' \"docs/食光记-AI-PM-作品集架构.md\")",
+      "Bash(grep -c '\\\\\\\\\\\\\\\\\\\\[' \"docs/食光记-PRD-最终版.md\")",
+      "Bash(grep -c '\\\\\\\\\\\\\\\\\\\\]' \"docs/食光记-PRD-最终版.md\")",
+      "Bash(xxd \"docs/食光记-PRD-最终版.md\")",
+      "Bash(awk '/```mermaid/{in_mermaid=1} /```$/{if\\(in_mermaid\\){in_mermaid=0; next}} in_mermaid{gsub\\(/\\\\\\\\\\\\[/, \"[\"\\); print; next} {print}' \"docs/食光记-PRD-最终版.md\")",
+      "Bash(mv \"docs/食光记-PRD-最终版-temp.md\" \"docs/食光记-PRD-最终版.md\")"
     ]
   }
 }

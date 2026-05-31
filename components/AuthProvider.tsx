@@ -12,6 +12,7 @@ import {
   saveTargets,
   setAuth,
 } from "@/lib/storage";
+import { getOrCreateUserId } from "@/lib/userId";
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -42,6 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuthenticated(getAuth());
     setUserProfile(loadProfile());
     setDailyTarget(loadTargets());
+    getOrCreateUserId(); // 初始化 Supabase 用户 ID（异步，不阻塞 UI）
     setMounted(true);
   }, []);
 

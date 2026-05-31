@@ -10,9 +10,45 @@ function getApiKey(): string {
   return key;
 }
 
-async function extractMemory(userMessage: string, finalReply: string, apiKey: string): Promise<Array<{ field: string; value: string }>> {
+async function extractMemory(
+  userMessage: string,
+  finalReply: string,
+  existingMemory: string,
+  conversationContext: string,
+  apiKey: string,
+): Promise<Array<{ field: string; value: string }>> {
   try {
     const extractTool = getExtractMemoryToolDef();
+
+    const memMessages: Array<{ role: string; content: string }> = [
+      {
+        role: "system",
+        content: `你负责从对话中提取用户的新个人信息。只提取明确、有价值的信息。
+字段类型：忌口（不吃什么）、偏好（喜欢什么）、生活习惯（作息/运动/工作）、常吃食物。
+不要编造，只提取用户明确说出的信息。没有新信息时返回空数组。
+
+如果用户提及的信息与已有记忆相同或高度相似，不要重复提取。`,
+      },
+    ];
+
+    if (existingMemory) {
+      memMessages.push({
+        role: "user",
+        content: `【用户已有记忆，不要重复提取】\n${existingMemory}`,
+      });
+    }
+
+    memMessages.push({
+      role: "user",
+      content: `【对话上下文】
+${conversationContext}
+
+【助手最终回复】
+"${finalReply}"
+
+请从以上对话中提取用户新透露的个人信息。`,
+    });
+
     const memRes = await fetch("https://api.deepseek.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -21,15 +57,7 @@ async function extractMemory(userMessage: string, finalReply: string, apiKey: st
       },
       body: JSON.stringify({
         model: MODEL,
-        messages: [
-          {
-            role: "system",
-            content: `你负责从对话中提取用户的新个人信息。只会提取明确、有价值的信息。
-字段类型：忌口（不吃什么）、偏好（喜欢什么）、生活习惯（作息/运动/工作）、常吃食物。
-不要编造，只提取用户明确说出的信息。没有新信息时返回空数组。`,
-          },
-          { role: "user", content: `用户说："${userMessage}"\n助手回复："${finalReply}"` },
-        ],
+        messages: memMessages,
         temperature: 0.1,
         max_tokens: 512,
         tools: [extractTool],
@@ -69,7 +97,7 @@ export async function POST(req: Request) {
     ];
 
     if (context.memoryText) {
-      messages.push({ role: "system", content: `【用户长期记忆】\n${context.memoryText}\n\n请结合以上用户记忆个性化回答。` });
+      messages.push({ role: "user", content: `【用户长期记忆】\n${context.memoryText}` });
     }
 
     messages.push({ role: "user", content: userMessage });
@@ -149,8 +177,20 @@ export async function POST(req: Request) {
       preliminaryReply = "抱歉，我需要更多信息才能回答这个问题，请说得更具体一些。";
     }
 
+    // 构建对话上下文（收集所有用户消息，用于 memory 提取）
+    const userMessages = messages
+      .filter((m) => m.role === "user")
+      .map((m) => m.content as string);
+    const conversationContext = userMessages.join("\n---\n");
+
     // ---- Memory 提取（并行跑，不阻塞流） ----
-    const memoryPromise = extractMemory(userMessage, preliminaryReply, apiKey);
+    const memoryPromise = extractMemory(
+      userMessage,
+      preliminaryReply,
+      context.memoryText ?? "",
+      conversationContext,
+      apiKey,
+    );
 
     // ---- 流式输出：用干净的 messages（无 assistant 回复）调用 stream API ----
     const stream = new ReadableStream({
