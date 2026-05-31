@@ -540,6 +540,7 @@ function QualityTab() {
   const [stats, setStats] = useState<{ total: number; good: number; suspicious: number; bad: number }>({ total: 0, good: 0, suspicious: 0, bad: 0 });
   const [reviews, setReviews] = useState<Record<string, { verdict: string; note: string }>>({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
+  const [filter, setFilter] = useState<"pending" | "reviewed">("pending");
 
   useEffect(() => {
     import("@/lib/db").then((m) => m.adminGetQualityStats().then(setStats));
@@ -548,6 +549,12 @@ function QualityTab() {
   const loadSamples = async () => {
     setLoading(true);
     setReviews({});
+    if (filter === "reviewed") {
+      const data = await import("@/lib/db").then((m) => m.adminGetReviewedItems(scene, sampleSize));
+      setSamples(data);
+      setLoading(false);
+      return;
+    }
     let data: Record<string, unknown>[] = [];
     if (scene === "meal") {
       data = await import("@/lib/db").then((m) => m.adminGetRandomMeals(sampleSize));
@@ -571,6 +578,11 @@ function QualityTab() {
         note: reviews[recordId]?.note ?? "",
       }));
       setStats((prev) => ({ ...prev, total: prev.total + 1, [verdict]: (prev[verdict as keyof typeof prev] as number) + 1 }));
+      // 标记后从当前列表移除该卡片
+      setSamples((prev) => prev.filter((s) => {
+        const id = String(s.id ?? s.date ?? s.week_start ?? "");
+        return id !== recordId;
+      }));
     } catch { /* ignore */ }
     setSaving((prev) => ({ ...prev, [recordId]: false }));
   };
@@ -614,34 +626,63 @@ function QualityTab() {
           {(["meal", "daily", "assistant"] as const).map((s) => (
             <button
               key={s}
-              onClick={() => setScene(s)}
+              onClick={() => { setScene(s); setSamples([]); }}
               className={`rounded-md px-3 py-1 font-medium transition-colors ${scene === s ? "bg-white text-emerald-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
             >
               {s === "meal" ? "单餐分析" : s === "daily" ? "每日总结" : "AI助手"}
             </button>
           ))}
         </div>
-        <select
-          value={sampleSize}
-          onChange={(e) => setSampleSize(Number(e.target.value))}
-          className="rounded-lg border border-gray-200 px-2 py-1.5 text-sm outline-none"
-        >
-          <option value={5}>抽5条</option>
-          <option value={10}>抽10条</option>
-          <option value={20}>抽20条</option>
-        </select>
-        <button
-          onClick={loadSamples}
-          disabled={loading}
-          className="rounded-lg bg-emerald-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
-        >
-          {loading ? "抽取中..." : "随机抽取"}
-        </button>
+        <div className="flex gap-1 rounded-lg bg-gray-100 p-1 text-sm">
+          <button
+            onClick={() => { setFilter("pending"); setSamples([]); }}
+            className={`rounded-md px-3 py-1 font-medium transition-colors ${filter === "pending" ? "bg-white text-emerald-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+          >
+            待审核
+          </button>
+          <button
+            onClick={() => { setFilter("reviewed"); setSamples([]); }}
+            className={`rounded-md px-3 py-1 font-medium transition-colors ${filter === "reviewed" ? "bg-white text-emerald-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+          >
+            已审核
+          </button>
+        </div>
+        {filter === "pending" && (
+          <>
+            <select
+              value={sampleSize}
+              onChange={(e) => setSampleSize(Number(e.target.value))}
+              className="rounded-lg border border-gray-200 px-2 py-1.5 text-sm outline-none"
+            >
+              <option value={5}>抽5条</option>
+              <option value={10}>抽10条</option>
+              <option value={20}>抽20条</option>
+            </select>
+            <button
+              onClick={loadSamples}
+              disabled={loading}
+              className="rounded-lg bg-emerald-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+            >
+              {loading ? "抽取中..." : "随机抽取"}
+            </button>
+          </>
+        )}
+        {filter === "reviewed" && (
+          <button
+            onClick={loadSamples}
+            disabled={loading}
+            className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+          >
+            {loading ? "加载中..." : "查看已审核"}
+          </button>
+        )}
       </div>
 
       {/* 样本列表 */}
       {samples.length === 0 && !loading && (
-        <p className="py-8 text-center text-sm text-gray-400">点击「随机抽取」开始质检</p>
+        <p className="py-8 text-center text-sm text-gray-400">
+          {filter === "pending" ? "点击「随机抽取」开始质检" : "点击「查看已审核」加载历史记录"}
+        </p>
       )}
 
       <div className="grid grid-cols-1 gap-3">
@@ -674,8 +715,14 @@ function QualityCard({
   onNoteChange: (n: string) => void;
 }) {
   const mealId = data.id as string ?? "";
-  const isReviewed = !!review?.verdict;
+  const defaultVerdict = data._verdict as string | undefined;
+  const defaultNote = data._note as string | undefined;
+  const reviewedAt = data._reviewed_at as string | undefined;
+  const isReviewed = !!review?.verdict || !!defaultVerdict;
+  const verdict = review?.verdict ?? defaultVerdict ?? "";
+  const note = review?.note ?? defaultNote ?? "";
   const isHighRisk = scene === "meal" && ((data.follow_up_count as number) ?? 0) > 2;
+  const verdictLabel = verdict === "good" ? "✅ 合理" : verdict === "suspicious" ? "⚠️ 存疑" : verdict === "bad" ? "❌ 错误" : "";
 
   return (
     <div className={`rounded-lg bg-white p-4 shadow-sm ${isReviewed ? "opacity-60" : ""}`}>
@@ -796,10 +843,21 @@ function QualityCard({
           />
         </div>
       ) : (
-        <p className="text-xs text-gray-400">
-          已标记为 {review.verdict === "good" ? "✅ 合理" : review.verdict === "suspicious" ? "⚠️ 存疑" : "❌ 错误"}
-          {review.note && ` — ${review.note}`}
-        </p>
+        <div className="flex items-center gap-2">
+          <span className={`rounded-lg px-2.5 py-1 text-xs font-medium ${
+            verdict === "good" ? "bg-emerald-50 text-emerald-700" :
+            verdict === "suspicious" ? "bg-amber-50 text-amber-700" :
+            "bg-red-50 text-red-700"
+          }`}>
+            已标记：{verdictLabel}
+          </span>
+          {note && <span className="text-xs text-gray-500">备注：{note}</span>}
+          {reviewedAt && (
+            <span className="text-xs text-gray-400">
+              {new Date(reviewedAt).toLocaleString("zh-CN")}
+            </span>
+          )}
+        </div>
       )}
     </div>
   );

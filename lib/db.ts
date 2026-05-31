@@ -646,3 +646,47 @@ export async function saveQualityReview(review: { scene: string; record_id: stri
     note: review.note ?? null,
   });
 }
+
+export async function adminGetReviewedItems(
+  scene: string,
+  limit = 50,
+): Promise<DbRow[]> {
+  const { data: reviews } = await supabase
+    .from("quality_reviews")
+    .select("record_id, verdict, note, created_at")
+    .eq("scene", scene)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (!reviews?.length) return [];
+
+  const ids = reviews.map((r) => r.record_id);
+
+  let sourceData: DbRow[] = [];
+  if (scene === "meal") {
+    const { data } = await supabase
+      .from("meal_records")
+      .select("id, date, meal_type, meal_record_text, nutrition_estimate, meal_status, follow_up_count, user_id")
+      .in("id", ids);
+    sourceData = data ?? [];
+  } else if (scene === "daily") {
+    const { data } = await supabase
+      .from("daily_summaries")
+      .select("*")
+      .in("date", ids);
+    sourceData = data ?? [];
+  } else if (scene === "assistant") {
+    const { data } = await supabase
+      .from("conversations")
+      .select("*")
+      .in("id", ids);
+    sourceData = data ?? [];
+  }
+
+  const reviewMap = new Map(reviews.map((r) => [r.record_id, r]));
+  return sourceData.map((d) => {
+    const id = (d.id ?? d.date ?? d.week_start) as string;
+    const r = reviewMap.get(id);
+    return { ...d, _verdict: r?.verdict, _note: r?.note, _reviewed_at: r?.created_at };
+  });
+}
