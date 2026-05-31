@@ -145,12 +145,14 @@ export async function syncConversationToDb(userId: string, conv: Conversation): 
 
 // ========== Admin 查询 ==========
 
-export async function adminGetAllUsers(): Promise<any[]> {
+type DbRow = Record<string, unknown>;
+
+export async function adminGetAllUsers(): Promise<DbRow[]> {
   const { data } = await supabase.from("users").select("*").order("created_at", { ascending: false });
   return data ?? [];
 }
 
-export async function adminGetMealsByDateRange(startDate: string, endDate: string): Promise<any[]> {
+export async function adminGetMealsByDateRange(startDate: string, endDate: string): Promise<DbRow[]> {
   const { data } = await supabase
     .from("meal_records")
     .select("*")
@@ -160,12 +162,12 @@ export async function adminGetMealsByDateRange(startDate: string, endDate: strin
   return data ?? [];
 }
 
-export async function adminGetDailySummaries(date: string): Promise<any[]> {
+export async function adminGetDailySummaries(date: string): Promise<DbRow[]> {
   const { data } = await supabase.from("daily_summaries").select("*").eq("date", date);
   return data ?? [];
 }
 
-export async function adminGetAllMemories(): Promise<any[]> {
+export async function adminGetAllMemories(): Promise<DbRow[]> {
   const { data } = await supabase
     .from("memories")
     .select("*")
@@ -173,7 +175,7 @@ export async function adminGetAllMemories(): Promise<any[]> {
   return data ?? [];
 }
 
-export async function adminGetProactiveLogs(limit = 50): Promise<any[]> {
+export async function adminGetProactiveLogs(limit = 50): Promise<DbRow[]> {
   const { data } = await supabase
     .from("proactive_logs")
     .select("*")
@@ -186,7 +188,7 @@ export async function adminGetStats(): Promise<{
   totalUsers: number;
   totalMeals: number;
   mealsPerUser: number;
-  recentActivity: any[];
+  recentActivity: DbRow[];
 }> {
   const { count: totalUsers } = await supabase
     .from("users")
