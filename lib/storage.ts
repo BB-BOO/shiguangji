@@ -63,11 +63,14 @@ export async function loadProfile(): Promise<UserProfile | null> {
   try {
     const { loadProfileFromDb } = await import("./db");
     const data = await loadProfileFromDb(uid);
-    cacheSet(ck, data);
-    return data;
-  } catch {
-    return null;
-  }
+    if (data) { cacheSet(ck, data); return data; }
+  } catch { /* fall through */ }
+  // Supabase 兜底：从 localStorage 读
+  try {
+    const raw = localStorage.getItem("shiguangji-profile");
+    if (raw) { const p = JSON.parse(raw) as UserProfile; cacheSet(ck, p); return p; }
+  } catch { /* ignore */ }
+  return null;
 }
 
 export function saveProfile(profile: UserProfile): void {
@@ -84,15 +87,18 @@ export async function loadTargets(): Promise<DailyTargetRange | null> {
   if (!uid) return null;
   const ck = `targets:${uid}`;
   const cached = cacheGet<DailyTargetRange | null>(ck);
-  if (cached !== undefined) return cached;
+  if (cached !== null && cached !== undefined) return cached;
   try {
     const { loadTargetsFromDb } = await import("./db");
     const data = await loadTargetsFromDb(uid);
-    cacheSet(ck, data);
-    return data;
-  } catch {
-    return null;
-  }
+    if (data) { cacheSet(ck, data); return data; }
+  } catch { /* fall through */ }
+  // Supabase 兜底：从 localStorage 读
+  try {
+    const raw = localStorage.getItem("shiguangji-targets");
+    if (raw) { const t = JSON.parse(raw) as DailyTargetRange; cacheSet(ck, t); return t; }
+  } catch { /* ignore */ }
+  return null;
 }
 
 export function saveTargets(targets: DailyTargetRange): void {

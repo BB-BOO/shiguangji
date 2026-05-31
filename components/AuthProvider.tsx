@@ -54,10 +54,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const id = await loginUser(username);
     setStoredUserId(id);
     setAuth(true);
+    const profile = await loadProfile();
+    const targets = await loadTargets();
+    setUserProfile(profile);
+    setDailyTarget(targets);
     setIsAuthenticated(true);
-    // 登录后立即加载资料，避免首页跳转到 /profile
-    setUserProfile(await loadProfile());
-    setDailyTarget(await loadTargets());
   }, []);
 
   const register = useCallback(async (username: string) => {
