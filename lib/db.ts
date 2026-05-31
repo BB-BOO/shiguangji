@@ -163,6 +163,33 @@ export async function syncProactiveLogToDb(userId: string, log: ProactiveLog): P
   });
 }
 
+export async function dismissProactiveLogInDb(logId: string): Promise<void> {
+  await supabase.from("proactive_logs").update({ dismissed: true }).eq("id", logId);
+}
+
+// ========== 每周总结 ==========
+
+export async function syncWeeklySummaryToDb(
+  userId: string,
+  weekStart: string,
+  fingerprint: string,
+  summary: import("./types").WeeklyAnalysisResponse,
+): Promise<void> {
+  await supabase.from("weekly_summaries").upsert(
+    {
+      user_id: userId,
+      week_start: weekStart,
+      fingerprint,
+      weekly_status: summary.weekly_status,
+      goal_match: summary.goal_match,
+      feedback: summary.feedback,
+      analysis_text: summary.analysis_text,
+      next_week_target: summary.next_week_target,
+    },
+    { onConflict: "user_id,week_start" },
+  );
+}
+
 // ========== AI 助手对话 ==========
 
 export async function syncConversationToDb(userId: string, conv: Conversation): Promise<void> {

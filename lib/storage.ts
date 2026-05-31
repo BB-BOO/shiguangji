@@ -232,6 +232,7 @@ export function saveProactiveLog(log: ProactiveLog): void {
 export function dismissProactiveLog(id: string): void {
   const logs = loadProactiveLogs().map((l) => (l.id === id ? { ...l, dismissed: true } : l));
   localStorage.setItem(STORAGE_KEYS.proactiveLogs, JSON.stringify(logs));
+  sync(() => import("./db").then((m) => m.dismissProactiveLogInDb(id)));
 }
 
 // ========== AI 助手对话 ==========
@@ -296,4 +297,5 @@ export function saveWeeklySummaryCache(
 ): void {
   const cached: CachedWeeklySummary = { weekStart, fingerprint, summary };
   localStorage.setItem("shiguangji-weekly-summary", JSON.stringify(cached));
+  sync((uid) => import("./db").then((m) => m.syncWeeklySummaryToDb(uid, weekStart, fingerprint, summary)));
 }
