@@ -10,6 +10,38 @@ import type {
   Conversation,
 } from "./types";
 
+// ========== 注册 / 登录 ==========
+
+export async function registerUser(username: string): Promise<string> {
+  const { data: existing } = await supabase
+    .from("users")
+    .select("id")
+    .eq("username", username)
+    .maybeSingle();
+
+  if (existing) throw new Error("用户名已存在");
+
+  const { data, error } = await supabase
+    .from("users")
+    .insert({ username })
+    .select("id")
+    .single();
+
+  if (error || !data) throw new Error("注册失败");
+  return data.id as string;
+}
+
+export async function loginUser(username: string): Promise<string> {
+  const { data } = await supabase
+    .from("users")
+    .select("id")
+    .eq("username", username)
+    .maybeSingle();
+
+  if (!data) throw new Error("用户不存在");
+  return data.id as string;
+}
+
 // ========== 餐记录 ==========
 
 export async function syncMealToDb(userId: string, record: MealRecord): Promise<void> {

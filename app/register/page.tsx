@@ -9,11 +9,9 @@ import Link from "next/link";
 export default function RegisterPage() {
   const router = useRouter();
   const { register, isAuthenticated } = useAuth();
-  const [nickname, setNickname] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
+  const [username, setUsername] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [ready, setReady] = useState(false);
 
@@ -36,18 +34,26 @@ export default function RegisterPage() {
     );
   }
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nickname.trim() || !email.trim() || !password.trim() || !confirm.trim()) {
-      setError("请填写完整");
+    if (!username.trim()) {
+      setError("请输入用户名");
       return;
     }
-    if (password !== confirm) {
-      setError("两次密码不一致");
+    if (username.trim().length < 2) {
+      setError("用户名至少 2 个字符");
       return;
     }
-    register(nickname, email, password);
-    router.push("/");
+    setLoading(true);
+    setError("");
+    try {
+      await register(username.trim());
+      router.push("/");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "注册失败");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -60,37 +66,17 @@ export default function RegisterPage() {
           食光记
         </h1>
         <p className="mt-1.5 text-sm text-[var(--color-muted)]">
-          AI 饮食分析助手
+          创建你的账号
         </p>
       </div>
 
       <form onSubmit={handleRegister} className="space-y-4">
         <input
           type="text"
-          value={nickname}
-          onChange={(e) => { setNickname(e.target.value); setError(""); }}
-          placeholder="昵称"
-          className="w-full rounded-2xl border border-[var(--color-border)] bg-white/80 px-4 py-3.5 text-sm outline-none transition-all focus:border-emerald-300 focus:bg-white focus:shadow-[0_0_0_3px_rgba(46,184,114,0.12)]"
-        />
-        <input
-          type="text"
-          value={email}
-          onChange={(e) => { setEmail(e.target.value); setError(""); }}
-          placeholder="邮箱"
-          className="w-full rounded-2xl border border-[var(--color-border)] bg-white/80 px-4 py-3.5 text-sm outline-none transition-all focus:border-emerald-300 focus:bg-white focus:shadow-[0_0_0_3px_rgba(46,184,114,0.12)]"
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => { setPassword(e.target.value); setError(""); }}
-          placeholder="密码"
-          className="w-full rounded-2xl border border-[var(--color-border)] bg-white/80 px-4 py-3.5 text-sm outline-none transition-all focus:border-emerald-300 focus:bg-white focus:shadow-[0_0_0_3px_rgba(46,184,114,0.12)]"
-        />
-        <input
-          type="password"
-          value={confirm}
-          onChange={(e) => { setConfirm(e.target.value); setError(""); }}
-          placeholder="确认密码"
+          value={username}
+          onChange={(e) => { setUsername(e.target.value); setError(""); }}
+          placeholder="设置用户名"
+          autoComplete="username"
           className="w-full rounded-2xl border border-[var(--color-border)] bg-white/80 px-4 py-3.5 text-sm outline-none transition-all focus:border-emerald-300 focus:bg-white focus:shadow-[0_0_0_3px_rgba(46,184,114,0.12)]"
         />
         {error && (
@@ -98,9 +84,10 @@ export default function RegisterPage() {
         )}
         <button
           type="submit"
-          className="btn-primary w-full rounded-[24px] py-3.5 text-base font-semibold text-white"
+          disabled={loading}
+          className="btn-primary w-full rounded-[24px] py-3.5 text-base font-semibold text-white disabled:opacity-60"
         >
-          注册
+          {loading ? "注册中..." : "注册"}
         </button>
       </form>
 

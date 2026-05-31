@@ -9,9 +9,9 @@ import Link from "next/link";
 export default function LoginPage() {
   const router = useRouter();
   const { login, isAuthenticated } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [ready, setReady] = useState(false);
 
@@ -34,14 +34,22 @@ export default function LoginPage() {
     );
   }
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !password.trim()) {
-      setError("请填写完整");
+    if (!username.trim()) {
+      setError("请输入用户名");
       return;
     }
-    login(email, password);
-    router.push("/");
+    setLoading(true);
+    setError("");
+    try {
+      await login(username.trim());
+      router.push("/");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "登录失败");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -61,16 +69,10 @@ export default function LoginPage() {
       <form onSubmit={handleLogin} className="space-y-4">
         <input
           type="text"
-          value={email}
-          onChange={(e) => { setEmail(e.target.value); setError(""); }}
-          placeholder="邮箱 / 手机号"
-          className="w-full rounded-2xl border border-[var(--color-border)] bg-white/80 px-4 py-3.5 text-sm outline-none transition-all focus:border-emerald-300 focus:bg-white focus:shadow-[0_0_0_3px_rgba(46,184,114,0.12)]"
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => { setPassword(e.target.value); setError(""); }}
-          placeholder="密码"
+          value={username}
+          onChange={(e) => { setUsername(e.target.value); setError(""); }}
+          placeholder="用户名"
+          autoComplete="username"
           className="w-full rounded-2xl border border-[var(--color-border)] bg-white/80 px-4 py-3.5 text-sm outline-none transition-all focus:border-emerald-300 focus:bg-white focus:shadow-[0_0_0_3px_rgba(46,184,114,0.12)]"
         />
         {error && (
@@ -78,9 +80,10 @@ export default function LoginPage() {
         )}
         <button
           type="submit"
-          className="btn-primary w-full rounded-[24px] py-3.5 text-base font-semibold text-white"
+          disabled={loading}
+          className="btn-primary w-full rounded-[24px] py-3.5 text-base font-semibold text-white disabled:opacity-60"
         >
-          登录
+          {loading ? "登录中..." : "登录"}
         </button>
       </form>
 

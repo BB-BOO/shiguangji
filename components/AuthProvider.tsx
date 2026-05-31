@@ -12,14 +12,15 @@ import {
   saveTargets,
   setAuth,
 } from "@/lib/storage";
-import { getOrCreateUserId } from "@/lib/userId";
+import { setStoredUserId, clearStoredUserId } from "@/lib/userId";
+import { loginUser, registerUser } from "@/lib/db";
 
 interface AuthState {
   isAuthenticated: boolean;
   userProfile: UserProfile | null;
   dailyTarget: DailyTargetRange | null;
-  login: (email: string, password: string) => void;
-  register: (nickname: string, email: string, password: string) => void;
+  login: (username: string) => Promise<void>;
+  register: (username: string) => Promise<void>;
   logout: () => void;
   updateProfile: (profile: UserProfile) => void;
   updateTargets: (targets: DailyTargetRange) => void;
@@ -43,23 +44,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuthenticated(getAuth());
     setUserProfile(loadProfile());
     setDailyTarget(loadTargets());
-    getOrCreateUserId(); // 初始化 Supabase 用户 ID（异步，不阻塞 UI）
     setMounted(true);
   }, []);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const login = useCallback((_email: string, _password: string) => {
+  const login = useCallback(async (username: string) => {
+    const id = await loginUser(username);
+    setStoredUserId(id);
     setAuth(true);
     setIsAuthenticated(true);
   }, []);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const register = useCallback((_nickname: string, _email: string, _password: string) => {
+  const register = useCallback(async (username: string) => {
+    const id = await registerUser(username);
+    setStoredUserId(id);
     setAuth(true);
     setIsAuthenticated(true);
   }, []);
 
   const logout = useCallback(() => {
+    clearStoredUserId();
     setAuth(false);
     setIsAuthenticated(false);
   }, []);
@@ -77,7 +80,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       saveTargets(targets);
       setDailyTarget(targets);
 
-      // 同步到 memory，让 MemoryManager 立即可见
       const now = new Date().toISOString();
       const syncEntries = [
         { field: "身高", value: `${profile.height_cm}cm`, source: "profile", extracted_at: now },
