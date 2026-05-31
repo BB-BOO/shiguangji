@@ -91,7 +91,8 @@
       "Bash(grep -c '\\\\\\\\\\\\\\\\\\\\]' \"docs/食光记-PRD-最终版.md\")",
       "Bash(xxd \"docs/食光记-PRD-最终版.md\")",
       "Bash(awk '/```mermaid/{in_mermaid=1} /```$/{if\\(in_mermaid\\){in_mermaid=0; next}} in_mermaid{gsub\\(/\\\\\\\\\\\\[/, \"[\"\\); print; next} {print}' \"docs/食光记-PRD-最终版.md\")",
-      "Bash(mv \"docs/食光记-PRD-最终版-temp.md\" \"docs/食光记-PRD-最终版.md\")"
+      "Bash(mv \"docs/食光记-PRD-最终版-temp.md\" \"docs/食光记-PRD-最终版.md\")",
+      "Bash(git *)"
     ]
   }
 }

@@ -55,6 +55,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setStoredUserId(id);
     setAuth(true);
     setIsAuthenticated(true);
+    // 登录后立即加载资料，避免首页跳转到 /profile
+    setUserProfile(await loadProfile());
+    setDailyTarget(await loadTargets());
   }, []);
 
   const register = useCallback(async (username: string) => {
@@ -62,6 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setStoredUserId(id);
     setAuth(true);
     setIsAuthenticated(true);
+    // 注册后无资料，跳转 /profile 是预期行为
   }, []);
 
   const logout = useCallback(() => {
