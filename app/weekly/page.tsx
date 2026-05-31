@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { fetchWeeklyAnalysis } from "@/lib/difyService";
-import { loadMealsByDateRange, loadMemory, loadWeeklySummaryCache, saveWeeklySummaryCache, addMemoryEntry } from "@/lib/storage";
+import { loadMealsByDateRange, loadMemory, loadWeeklySummaryCache, saveWeeklySummaryCache, addMemoryEntry, syncWeeklyRating, syncGoalAdoption } from "@/lib/storage";
 import type { DailyTargetRange, MealRecord, NutritionEstimate, WeeklyAnalysisResponse, WeeklyStatus } from "@/lib/types";
 import { goalMatchClass, macroStatusClass, overallBalanceClass, proteinVegStatusClass } from "@/lib/ratingStyles";
 import { computeWeeklyStatus } from "@/lib/nutritionStatus";
@@ -331,6 +331,7 @@ export default function WeeklyPage() {
       calories_kcal: { min: t.calories_min, max: t.calories_max },
     });
     setApplied(true);
+    syncGoalAdoption(weekData[0]?.date || "");
   };
 
   if (!ready) {
@@ -583,6 +584,7 @@ export default function WeeklyPage() {
                               ratings[new Date().toISOString().split("T")[0]] = true;
                               localStorage.setItem("shiguangji-weekly-rating", JSON.stringify(ratings));
                             } catch { /* ignore */ }
+                            syncWeeklyRating(weekData[0]?.date || "", true);
                           }}
                           className="flex items-center gap-1.5 rounded-xl bg-emerald-50 px-4 py-2 text-xs font-medium text-emerald-700 transition-all hover:bg-emerald-100 active:scale-[0.97]"
                         >
@@ -597,6 +599,7 @@ export default function WeeklyPage() {
                               ratings[new Date().toISOString().split("T")[0]] = false;
                               localStorage.setItem("shiguangji-weekly-rating", JSON.stringify(ratings));
                             } catch { /* ignore */ }
+                            syncWeeklyRating(weekData[0]?.date || "", false);
                           }}
                           className="flex items-center gap-1.5 rounded-xl bg-gray-100 px-4 py-2 text-xs font-medium text-[var(--color-muted)] transition-all hover:bg-gray-200 active:scale-[0.97]"
                         >

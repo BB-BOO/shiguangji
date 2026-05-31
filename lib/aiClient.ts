@@ -12,6 +12,7 @@ interface CallDeepSeekParams {
   userMessage: string;
   messages?: Array<{ role: "user" | "assistant"; content: string }>;
   temperature?: number;
+  onUsage?: (usage: { prompt_tokens: number; completion_tokens: number; cache_hit_tokens: number; cache_miss_tokens: number }) => void;
 }
 
 interface ToolDef {
@@ -77,6 +78,17 @@ export async function callDeepSeekWithTool<T>(
   }
 
   const args = toolCalls[0].function.arguments;
+
+  // 记录 token 用量
+  if (params.onUsage && data.usage) {
+    params.onUsage({
+      prompt_tokens: data.usage.prompt_tokens ?? 0,
+      completion_tokens: data.usage.completion_tokens ?? 0,
+      cache_hit_tokens: data.usage.prompt_cache_hit_tokens ?? 0,
+      cache_miss_tokens: data.usage.prompt_cache_miss_tokens ?? (data.usage.prompt_tokens ?? 0),
+    });
+  }
+
   try {
     return JSON.parse(args) as T;
   } catch {

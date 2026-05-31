@@ -193,13 +193,20 @@ export async function syncWeeklySummaryToDb(
 // ========== AI 助手对话 ==========
 
 export async function syncConversationToDb(userId: string, conv: Conversation): Promise<void> {
-  await supabase.from("conversations").upsert({
+  const { error } = await supabase.from("conversations").upsert({
     id: conv.id,
     user_id: userId,
     date: conv.date,
     message_preview: conv.message_preview,
     messages: conv.messages,
   });
+  if (error) console.error("[conversations] Upsert failed:", error.message);
+  // tool_summary 单独更新，列不存在时不影响对话保存
+  if (conv.tool_summary?.length) {
+    supabase.from("conversations").update({ tool_summary: conv.tool_summary }).eq("id", conv.id).then(({ error: e2 }) => {
+      if (e2) console.error("[conversations] tool_summary update failed:", e2.message);
+    });
+  }
 }
 
 // ========== 读取（替代 localStorage） ==========
@@ -226,10 +233,13 @@ export async function loadMealsByDateRangeFromDb(userId: string, startDate: stri
   return (data ?? []) as unknown as MealRecord[];
 }
 
-export async function loadDailySummaryFromDb(userId: string, date: string): Promise<DailySummaryResponse | null> {
-  const { data } = await supabase.from("daily_summaries").select("daily_status, feedback, analysis_text").eq("user_id", userId).eq("date", date).maybeSingle();
+export async function loadDailySummaryFromDb(userId: string, date: string): Promise<{ summary: DailySummaryResponse; fingerprint: string } | null> {
+  const { data } = await supabase.from("daily_summaries").select("daily_status, feedback, analysis_text, fingerprint").eq("user_id", userId).eq("date", date).maybeSingle();
   if (!data) return null;
-  return { daily_status: data.daily_status as DailySummaryResponse["daily_status"], feedback: data.feedback as string, analysis_text: data.analysis_text as string };
+  return {
+    summary: { daily_status: data.daily_status as DailySummaryResponse["daily_status"], feedback: data.feedback as string, analysis_text: data.analysis_text as string },
+    fingerprint: (data.fingerprint as string) ?? "",
+  };
 }
 
 export async function loadMemoryFromDb(userId: string): Promise<MemoryEntry[]> {
@@ -248,14 +258,18 @@ export async function loadProactiveLogsFromDb(userId: string): Promise<Proactive
 }
 
 export async function loadConversationsFromDb(userId: string): Promise<Conversation[]> {
-  const { data } = await supabase.from("conversations").select("*").eq("user_id", userId).order("date", { ascending: false }).limit(20);
-  return (data ?? []) as Conversation[];
+  const { data, error } = await supabase.from("conversations").select("*").eq("user_id", userId).order("date", { ascending: false }).limit(20);
+  if (error) console.error("[conversations] Load failed:", error.message);
+  return (data ?? []) as unknown as Conversation[];
 }
 
-export async function loadWeeklySummaryFromDb(userId: string, weekStart: string): Promise<import("./types").WeeklyAnalysisResponse | null> {
+export async function loadWeeklySummaryFromDb(userId: string, weekStart: string): Promise<{ summary: import("./types").WeeklyAnalysisResponse; fingerprint: string } | null> {
   const { data } = await supabase.from("weekly_summaries").select("*").eq("user_id", userId).eq("week_start", weekStart).maybeSingle();
   if (!data) return null;
-  return { weekly_status: data.weekly_status as import("./types").WeeklyAnalysisResponse["weekly_status"], goal_match: data.goal_match as import("./types").GoalMatch, feedback: data.feedback as string, analysis_text: data.analysis_text as string, next_week_target: data.next_week_target as import("./types").NextWeekTarget };
+  return {
+    summary: { weekly_status: data.weekly_status as import("./types").WeeklyAnalysisResponse["weekly_status"], goal_match: data.goal_match as import("./types").GoalMatch, feedback: data.feedback as string, analysis_text: data.analysis_text as string, next_week_target: data.next_week_target as import("./types").NextWeekTarget },
+    fingerprint: (data.fingerprint as string) ?? "",
+  };
 }
 
 // ========== Admin 查询 ==========
@@ -325,4 +339,310 @@ export async function adminGetStats(): Promise<{
     mealsPerUser: totalUsers ? (totalMeals ?? 0) / (totalUsers || 1) : 0,
     recentActivity: recentActivity ?? [],
   };
+}
+
+// ========== 评分同步 ==========
+
+export async function updateMealRating(mealId: string, rating: boolean): Promise<void> {
+  await supabase.from("meal_records").update({ rating }).eq("id", mealId);
+}
+
+export async function syncDailyRating(userId: string, date: string, rating: boolean): Promise<void> {
+  await supabase.from("daily_summaries").upsert(
+    { user_id: userId, date, rating },
+    { onConflict: "user_id,date" },
+  );
+}
+
+export async function syncWeeklyRating(userId: string, weekStart: string, rating: boolean): Promise<void> {
+  await supabase.from("weekly_summaries").upsert(
+    { user_id: userId, week_start: weekStart, rating },
+    { onConflict: "user_id,week_start" },
+  );
+}
+
+export async function syncGoalAdoption(userId: string, weekStart: string): Promise<void> {
+  await supabase.from("weekly_summaries").upsert(
+    { user_id: userId, week_start: weekStart, target_adopted: true, target_adopted_at: new Date().toISOString() },
+    { onConflict: "user_id,week_start" },
+  );
+}
+
+export async function logError(
+  source: string,
+  errorType: string,
+  message: string,
+  stack?: string,
+): Promise<void> {
+  await supabase.from("error_logs").insert({
+    source,
+    error_type: errorType,
+    message,
+    stack: stack ?? null,
+  });
+}
+
+// ========== 管理后台查询 ==========
+
+export async function adminGetFollowUpMeals(limit = 50): Promise<DbRow[]> {
+  const { data } = await supabase
+    .from("meal_records")
+    .select("id, date, meal_type, follow_up_count, user_id")
+    .gt("follow_up_count", 0)
+    .order("follow_up_count", { ascending: false })
+    .limit(limit);
+  return data ?? [];
+}
+
+export async function adminGetMealRatingStats(): Promise<{ total: number; rated: number; satisfied: number }> {
+  const { count: total } = await supabase.from("meal_records").select("*", { count: "exact", head: true });
+  const { count: rated } = await supabase.from("meal_records").select("*", { count: "exact", head: true }).not("rating", "is", null);
+  const { count: satisfied } = await supabase.from("meal_records").select("*", { count: "exact", head: true }).eq("rating", true);
+  return { total: total ?? 0, rated: rated ?? 0, satisfied: satisfied ?? 0 };
+}
+
+export async function adminGetDailyRatingStats(): Promise<{ total: number; rated: number; satisfied: number }> {
+  const { count: total } = await supabase.from("daily_summaries").select("*", { count: "exact", head: true });
+  const { count: rated } = await supabase.from("daily_summaries").select("*", { count: "exact", head: true }).not("rating", "is", null);
+  const { count: satisfied } = await supabase.from("daily_summaries").select("*", { count: "exact", head: true }).eq("rating", true);
+  return { total: total ?? 0, rated: rated ?? 0, satisfied: satisfied ?? 0 };
+}
+
+export async function adminGetWeeklyRatingStats(): Promise<{ total: number; rated: number; satisfied: number }> {
+  const { count: total } = await supabase.from("weekly_summaries").select("*", { count: "exact", head: true });
+  const { count: rated } = await supabase.from("weekly_summaries").select("*", { count: "exact", head: true }).not("rating", "is", null);
+  const { count: satisfied } = await supabase.from("weekly_summaries").select("*", { count: "exact", head: true }).eq("rating", true);
+  return { total: total ?? 0, rated: rated ?? 0, satisfied: satisfied ?? 0 };
+}
+
+export async function adminGetGoalAdoptionStats(): Promise<{ total: number; adopted: number; records: DbRow[] }> {
+  const { count: total } = await supabase
+    .from("weekly_summaries")
+    .select("*", { count: "exact", head: true })
+    .not("next_week_target", "is", null);
+  const { count: adopted } = await supabase
+    .from("weekly_summaries")
+    .select("*", { count: "exact", head: true })
+    .eq("target_adopted", true);
+  const { data: records } = await supabase
+    .from("weekly_summaries")
+    .select("week_start, user_id, target_adopted, target_adopted_at")
+    .not("next_week_target", "is", null)
+    .eq("target_adopted", true)
+    .order("target_adopted_at", { ascending: false })
+    .limit(30);
+  return { total: total ?? 0, adopted: adopted ?? 0, records: records ?? [] };
+}
+
+export async function adminGetErrorLogs(limit = 50): Promise<DbRow[]> {
+  const { data } = await supabase
+    .from("error_logs")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return data ?? [];
+}
+
+// ========== API 调用成本记录 ==========
+
+export async function logApiCall(
+  source: string,
+  promptTokens: number,
+  completionTokens: number,
+  cacheHitTokens?: number,
+  cacheMissTokens?: number,
+): Promise<void> {
+  const { error } = await supabase.from("api_calls").insert({
+    source,
+    prompt_tokens: promptTokens,
+    completion_tokens: completionTokens,
+    cache_hit_tokens: cacheHitTokens ?? 0,
+    cache_miss_tokens: cacheMissTokens ?? promptTokens,
+  });
+  if (error) console.error("[api_calls] Insert failed:", error.message);
+}
+
+// ========== 留存查询 ==========
+
+export async function adminGetRetentionStats(): Promise<{
+  dau: DbRow[];
+  day2Rate: number;
+  day7Rate: number;
+  totalRecordingDays: number;
+}> {
+  // 每日活跃用户数
+  const { data: dau } = await supabase
+    .from("meal_records")
+    .select("date, user_id");
+
+  const dayUsers = new Map<string, Set<string>>();
+  (dau ?? []).forEach((r) => {
+    const d = r.date as string;
+    if (!dayUsers.has(d)) dayUsers.set(d, new Set());
+    dayUsers.get(d)!.add(r.user_id as string);
+  });
+
+  const sortedDays = [...dayUsers.keys()].sort();
+  const dauData = sortedDays.map((d) => ({ date: d, users: dayUsers.get(d)!.size }));
+
+  // D2 留存：次日有记录的用户 / 当日用户
+  let d2Pairs = 0;
+  let d2Returned = 0;
+  let d7Pairs = 0;
+  let d7Returned = 0;
+
+  for (let i = 0; i < sortedDays.length; i++) {
+    const day = sortedDays[i];
+    const users = dayUsers.get(day)!;
+    if (users.size === 0) continue;
+
+    // 次日
+    const nextDay = sortedDays[i + 1];
+    if (nextDay && dayUserAdjacent(day, nextDay, 1)) {
+      const nextUsers = dayUsers.get(nextDay)!;
+      d2Pairs += users.size;
+      users.forEach((u) => { if (nextUsers.has(u)) d2Returned++; });
+    }
+
+    // 7日
+    const d7Target = sortedDays.find((d) => dayUserAdjacent(day, d, 7));
+    if (d7Target) {
+      const d7Users = dayUsers.get(d7Target)!;
+      d7Pairs += users.size;
+      users.forEach((u) => { if (d7Users.has(u)) d7Returned++; });
+    }
+  }
+
+  return {
+    dau: dauData.slice(-30),
+    day2Rate: d2Pairs > 0 ? d2Returned / d2Pairs : 0,
+    day7Rate: d7Pairs > 0 ? d7Returned / d7Pairs : 0,
+    totalRecordingDays: sortedDays.length,
+  };
+}
+
+function dayUserAdjacent(a: string, b: string, n: number): boolean {
+  const da = new Date(a);
+  const db = new Date(b);
+  const diff = (db.getTime() - da.getTime()) / (1000 * 60 * 60 * 24);
+  return diff === n;
+}
+
+// ========== 成本查询 ==========
+
+export async function adminGetCostStats(): Promise<{
+  totalPrompt: number;
+  totalCompletion: number;
+  totalCacheHit: number;
+  totalCacheMiss: number;
+  estimatedCost: number;
+  bySource: DbRow[];
+  dailyTokens: DbRow[];
+}> {
+  const { data } = await supabase.from("api_calls").select("*");
+  const calls = data ?? [];
+
+  let totalPrompt = 0;
+  let totalCompletion = 0;
+  let totalCacheHit = 0;
+  let totalCacheMiss = 0;
+  const sourceMap: Record<string, { prompt: number; completion: number; cacheHit: number; cacheMiss: number; calls: number }> = {};
+  const dayMap: Record<string, { prompt: number; completion: number }> = {};
+
+  calls.forEach((c) => {
+    const p = (c.prompt_tokens as number) ?? 0;
+    const comp = (c.completion_tokens as number) ?? 0;
+    const hit = (c.cache_hit_tokens as number) ?? 0;
+    const miss = (c.cache_miss_tokens as number) ?? p;
+    totalPrompt += p;
+    totalCompletion += comp;
+    totalCacheHit += hit;
+    totalCacheMiss += miss;
+
+    const src = (c.source as string) ?? "unknown";
+    if (!sourceMap[src]) sourceMap[src] = { prompt: 0, completion: 0, cacheHit: 0, cacheMiss: 0, calls: 0 };
+    sourceMap[src].prompt += p;
+    sourceMap[src].completion += comp;
+    sourceMap[src].cacheHit += hit;
+    sourceMap[src].cacheMiss += miss;
+    sourceMap[src].calls++;
+
+    const day = ((c.created_at as string) ?? "").slice(0, 10);
+    if (!dayMap[day]) dayMap[day] = { prompt: 0, completion: 0 };
+    dayMap[day].prompt += p;
+    dayMap[day].completion += comp;
+  });
+
+  // DeepSeek: 缓存命中 ¥0.02/百万, 未命中 ¥1/百万, 输出 ¥2/百万
+  const estimatedCost = (totalCacheMiss / 1_000_000) * 1 + (totalCacheHit / 1_000_000) * 0.02 + (totalCompletion / 1_000_000) * 2;
+
+  return {
+    totalPrompt,
+    totalCompletion,
+    totalCacheHit,
+    totalCacheMiss,
+    estimatedCost: Math.round(estimatedCost * 10000) / 10000,
+    bySource: Object.entries(sourceMap).map(([source, v]) => ({ source, ...v })),
+    dailyTokens: Object.entries(dayMap).sort().map(([date, v]) => ({ date, ...v })),
+  };
+}
+
+// ========== 质检抽样 ==========
+
+export async function adminGetRandomMeals(limit = 5): Promise<DbRow[]> {
+  const { data } = await supabase
+    .from("meal_records")
+    .select("id, date, meal_type, meal_record_text, nutrition_estimate, meal_status, follow_up_count, user_id, created_at")
+    .not("nutrition_estimate", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(100);
+  const pool = data ?? [];
+  return shuffleSample(pool, limit);
+}
+
+export async function adminGetRandomDailySummaries(limit = 5): Promise<DbRow[]> {
+  const { data } = await supabase
+    .from("daily_summaries")
+    .select("*")
+    .not("analysis_text", "is", null)
+    .order("date", { ascending: false })
+    .limit(100);
+  const pool = data ?? [];
+  return shuffleSample(pool, limit);
+}
+
+export async function adminGetRandomConversations(limit = 5): Promise<DbRow[]> {
+  const { data } = await supabase
+    .from("conversations")
+    .select("*")
+    .order("date", { ascending: false })
+    .limit(100);
+  const pool = data ?? [];
+  return shuffleSample(pool, limit);
+}
+
+function shuffleSample<T>(arr: T[], n: number): T[] {
+  const pool = [...arr];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, Math.min(n, pool.length));
+}
+
+export async function adminGetQualityStats(): Promise<{ total: number; good: number; suspicious: number; bad: number }> {
+  const { count: total } = await supabase.from("quality_reviews").select("*", { count: "exact", head: true });
+  const { count: good } = await supabase.from("quality_reviews").select("*", { count: "exact", head: true }).eq("verdict", "good");
+  const { count: suspicious } = await supabase.from("quality_reviews").select("*", { count: "exact", head: true }).eq("verdict", "suspicious");
+  const { count: bad } = await supabase.from("quality_reviews").select("*", { count: "exact", head: true }).eq("verdict", "bad");
+  return { total: total ?? 0, good: good ?? 0, suspicious: suspicious ?? 0, bad: bad ?? 0 };
+}
+
+export async function saveQualityReview(review: { scene: string; record_id: string; verdict: string; note?: string }): Promise<void> {
+  await supabase.from("quality_reviews").insert({
+    scene: review.scene,
+    record_id: review.record_id,
+    verdict: review.verdict,
+    note: review.note ?? null,
+  });
 }

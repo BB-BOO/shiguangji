@@ -20,6 +20,27 @@ function sync<T>(fn: (userId: string) => Promise<T>): void {
   if (uid) fn(uid).catch(() => {});
 }
 
+// ========== 内存缓存（5 分钟 TTL，页面切换秒开） ==========
+const CACHE_TTL = 5 * 60 * 1000;
+const cache = new Map<string, { data: unknown; ts: number }>();
+
+function cacheGet<T>(key: string): T | null {
+  const entry = cache.get(key);
+  if (entry && Date.now() - entry.ts < CACHE_TTL) return entry.data as T;
+  cache.delete(key);
+  return null;
+}
+
+function cacheSet(key: string, data: unknown): void {
+  cache.set(key, { data, ts: Date.now() });
+}
+
+function cacheDel(prefix: string): void {
+  for (const key of cache.keys()) {
+    if (key.startsWith(prefix)) cache.delete(key);
+  }
+}
+
 // ========== 认证 ==========
 
 export function getAuth(): boolean {
@@ -36,9 +57,14 @@ export function setAuth(value: boolean): void {
 export async function loadProfile(): Promise<UserProfile | null> {
   const uid = getUserId();
   if (!uid) return null;
+  const ck = `profile:${uid}`;
+  const cached = cacheGet<UserProfile | null>(ck);
+  if (cached !== null) return cached;
   try {
     const { loadProfileFromDb } = await import("./db");
-    return await loadProfileFromDb(uid);
+    const data = await loadProfileFromDb(uid);
+    cacheSet(ck, data);
+    return data;
   } catch {
     return null;
   }
@@ -46,6 +72,8 @@ export async function loadProfile(): Promise<UserProfile | null> {
 
 export function saveProfile(profile: UserProfile): void {
   localStorage.setItem("shiguangji-profile", JSON.stringify(profile));
+  const uid = getUserId();
+  if (uid) cacheSet(`profile:${uid}`, profile);
   sync((uid) => import("./db").then((m) => m.syncProfileToDb(uid, profile)));
 }
 
@@ -54,9 +82,14 @@ export function saveProfile(profile: UserProfile): void {
 export async function loadTargets(): Promise<DailyTargetRange | null> {
   const uid = getUserId();
   if (!uid) return null;
+  const ck = `targets:${uid}`;
+  const cached = cacheGet<DailyTargetRange | null>(ck);
+  if (cached !== undefined) return cached;
   try {
     const { loadTargetsFromDb } = await import("./db");
-    return await loadTargetsFromDb(uid);
+    const data = await loadTargetsFromDb(uid);
+    cacheSet(ck, data);
+    return data;
   } catch {
     return null;
   }
@@ -64,6 +97,8 @@ export async function loadTargets(): Promise<DailyTargetRange | null> {
 
 export function saveTargets(targets: DailyTargetRange): void {
   localStorage.setItem("shiguangji-targets", JSON.stringify(targets));
+  const uid = getUserId();
+  if (uid) cacheSet(`targets:${uid}`, targets);
   sync((uid) => import("./db").then((m) => m.syncTargetsToDb(uid, targets)));
 }
 
@@ -77,9 +112,14 @@ export function getTodayKey(): string {
 export async function loadMeals(): Promise<MealRecord[]> {
   const uid = getUserId();
   if (!uid) return [];
+  const ck = `meals:${uid}`;
+  const cached = cacheGet<MealRecord[]>(ck);
+  if (cached) return cached;
   try {
     const { loadMealsFromDb } = await import("./db");
-    return await loadMealsFromDb(uid);
+    const data = await loadMealsFromDb(uid);
+    cacheSet(ck, data);
+    return data;
   } catch {
     return [];
   }
@@ -102,14 +142,20 @@ export async function loadMealsByDateRange(startDate: string, endDate: string): 
 }
 
 export function saveMeal(record: MealRecord): void {
+  const uid = getUserId();
+  if (uid) cacheDel(`meals:${uid}`);
   sync((uid) => import("./db").then((m) => m.syncMealToDb(uid, record)));
 }
 
 export function deleteMeal(id: string): void {
+  const uid = getUserId();
+  if (uid) cacheDel(`meals:${uid}`);
   sync(() => import("./db").then((m) => m.deleteMealFromDb(id)));
 }
 
 export function deleteMeals(ids: string[]): void {
+  const uid = getUserId();
+  if (uid) cacheDel(`meals:${uid}`);
   sync(() => import("./db").then((m) => m.deleteMealsFromDb(ids)));
 }
 
@@ -130,8 +176,8 @@ export async function loadDailySummaryCache(date: string): Promise<CachedDailySu
   if (!uid) return null;
   try {
     const { loadDailySummaryFromDb } = await import("./db");
-    const summary = await loadDailySummaryFromDb(uid, date);
-    if (summary) return { date, fingerprint: "", summary };
+    const result = await loadDailySummaryFromDb(uid, date);
+    if (result) return { date, fingerprint: result.fingerprint, summary: result.summary };
   } catch { /* fall through */ }
   return null;
 }
@@ -149,20 +195,26 @@ export function saveDailySummaryCache(
 export async function loadMemory(): Promise<MemoryEntry[]> {
   const uid = getUserId();
   if (!uid) return [];
+  const ck = `memory:${uid}`;
+  const cached = cacheGet<MemoryEntry[]>(ck);
+  if (cached) return cached;
   try {
     const { loadMemoryFromDb } = await import("./db");
-    return await loadMemoryFromDb(uid);
+    const data = await loadMemoryFromDb(uid);
+    cacheSet(ck, data);
+    return data;
   } catch {
     return [];
   }
 }
 
 export function saveMemory(entries: MemoryEntry[]): void {
+  const uid = getUserId();
+  if (uid) cacheSet(`memory:${uid}`, entries);
   sync((uid) => import("./db").then((m) => m.syncMemoryToDb(uid, entries)));
 }
 
 export function addMemoryEntry(entry: MemoryEntry): void {
-  // 先读后写 —— 异步读取，然后合并后写入
   loadMemory().then((entries) => {
     const idx = entries.findIndex((e) => e.field === entry.field && e.value === entry.value);
     if (idx >= 0) entries[idx] = entry;
@@ -183,15 +235,22 @@ export function deleteMemoryEntry(field: string, value: string): void {
 export async function loadProactiveConfig(): Promise<ProactiveConfig> {
   const uid = getUserId();
   if (!uid) return { daily_limit: 2, quiet_start: "22:00", quiet_end: "08:00", master_switch: true };
+  const ck = `pconfig:${uid}`;
+  const cached = cacheGet<ProactiveConfig>(ck);
+  if (cached) return cached;
   try {
     const { loadProactiveConfigFromDb } = await import("./db");
-    return await loadProactiveConfigFromDb(uid);
+    const data = await loadProactiveConfigFromDb(uid);
+    cacheSet(ck, data);
+    return data;
   } catch {
     return { daily_limit: 2, quiet_start: "22:00", quiet_end: "08:00", master_switch: true };
   }
 }
 
 export function saveProactiveConfig(config: ProactiveConfig): void {
+  const uid = getUserId();
+  if (uid) cacheSet(`pconfig:${uid}`, config);
   sync((uid) => import("./db").then((m) => m.syncProactiveConfigToDb(uid, config)));
 }
 
@@ -200,19 +259,28 @@ export function saveProactiveConfig(config: ProactiveConfig): void {
 export async function loadProactiveLogs(): Promise<ProactiveLog[]> {
   const uid = getUserId();
   if (!uid) return [];
+  const ck = `plogs:${uid}`;
+  const cached = cacheGet<ProactiveLog[]>(ck);
+  if (cached) return cached;
   try {
     const { loadProactiveLogsFromDb } = await import("./db");
-    return await loadProactiveLogsFromDb(uid);
+    const data = await loadProactiveLogsFromDb(uid);
+    cacheSet(ck, data);
+    return data;
   } catch {
     return [];
   }
 }
 
 export function saveProactiveLog(log: ProactiveLog): void {
+  const uid = getUserId();
+  if (uid) cacheDel(`plogs:${uid}`);
   sync((uid) => import("./db").then((m) => m.syncProactiveLogToDb(uid, log)));
 }
 
 export function dismissProactiveLog(id: string): void {
+  const uid = getUserId();
+  if (uid) cacheDel(`plogs:${uid}`);
   sync(() => import("./db").then((m) => m.dismissProactiveLogInDb(id)));
 }
 
@@ -221,16 +289,25 @@ export function dismissProactiveLog(id: string): void {
 export async function loadConversations(): Promise<Conversation[]> {
   const uid = getUserId();
   if (!uid) return [];
+  const ck = `convos:${uid}`;
+  const cached = cacheGet<Conversation[]>(ck);
+  if (cached) return cached;
   try {
     const { loadConversationsFromDb } = await import("./db");
-    return await loadConversationsFromDb(uid);
+    const data = await loadConversationsFromDb(uid);
+    cacheSet(ck, data);
+    return data;
   } catch {
     return [];
   }
 }
 
 export function saveConversation(conv: Conversation): void {
-  sync((uid) => import("./db").then((m) => m.syncConversationToDb(uid, conv)));
+  const uid = getUserId();
+  if (uid) cacheDel(`convos:${uid}`);
+  sync((uid) => import("./db").then((m) => m.syncConversationToDb(uid, conv)).catch((e) => {
+    console.error("[storage] saveConversation failed:", e instanceof Error ? e.message : String(e));
+  }));
 }
 
 export async function loadConversation(id: string): Promise<Conversation | null> {
@@ -255,8 +332,8 @@ export async function loadWeeklySummaryCache(weekStart: string): Promise<CachedW
   if (!uid) return null;
   try {
     const { loadWeeklySummaryFromDb } = await import("./db");
-    const summary = await loadWeeklySummaryFromDb(uid, weekStart);
-    if (summary) return { weekStart, fingerprint: "", summary };
+    const result = await loadWeeklySummaryFromDb(uid, weekStart);
+    if (result) return { weekStart, fingerprint: result.fingerprint, summary: result.summary };
   } catch { /* fall through */ }
   return null;
 }
@@ -267,4 +344,22 @@ export function saveWeeklySummaryCache(
   summary: import("./types").WeeklyAnalysisResponse,
 ): void {
   sync((uid) => import("./db").then((m) => m.syncWeeklySummaryToDb(uid, weekStart, fingerprint, summary)));
+}
+
+// ========== 评分同步 ==========
+
+export function syncMealRating(mealId: string, rating: boolean): void {
+  import("./db").then((m) => m.updateMealRating(mealId, rating)).catch(() => {});
+}
+
+export function syncDailyRating(date: string, rating: boolean): void {
+  sync((uid) => import("./db").then((m) => m.syncDailyRating(uid, date, rating)));
+}
+
+export function syncWeeklyRating(weekStart: string, rating: boolean): void {
+  sync((uid) => import("./db").then((m) => m.syncWeeklyRating(uid, weekStart, rating)));
+}
+
+export function syncGoalAdoption(weekStart: string): void {
+  sync((uid) => import("./db").then((m) => m.syncGoalAdoption(uid, weekStart)));
 }

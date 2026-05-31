@@ -66,12 +66,16 @@ ${allFoodText}`;
       systemPrompt: MEAL_ANALYSIS_PROMPT,
       userMessage,
       tool: MEAL_ANALYSIS_TOOL,
+      onUsage: (u) => { import("@/lib/db").then((m) => m.logApiCall("meal-chat/analyze", u.prompt_tokens, u.completion_tokens, u.cache_hit_tokens, u.cache_miss_tokens)).catch(() => {}); },
     });
     console.log("[meal-chat/analyze] Done");
 
     return Response.json(analysis);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
+    import("@/lib/db").then(({ logError }) =>
+      logError("meal-chat/analyze", e instanceof Error ? e.constructor.name : "UnknownError", msg, e instanceof Error ? e.stack : undefined)
+    ).catch(() => {});
     console.error("[meal-chat/analyze] ERROR:", msg);
     return Response.json({ error: msg }, { status: 500 });
   }

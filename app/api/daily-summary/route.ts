@@ -98,6 +98,7 @@ export async function POST(req: Request) {
       systemPrompt: DAILY_SUMMARY_PROMPT,
       userMessage,
       tool: DAILY_SUMMARY_TOOL,
+      onUsage: (u) => { import("@/lib/db").then((m) => m.logApiCall("daily-summary", u.prompt_tokens, u.completion_tokens, u.cache_hit_tokens, u.cache_miss_tokens)).catch(() => {}); },
     });
 
     // 合并系统计算的 status + LLM 生成的自然语言
@@ -108,6 +109,9 @@ export async function POST(req: Request) {
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
+    import("@/lib/db").then(({ logError }) =>
+      logError("daily-summary", e instanceof Error ? e.constructor.name : "UnknownError", msg, e instanceof Error ? e.stack : undefined)
+    ).catch(() => {});
     console.error("[daily-summary] ERROR:", msg);
     return Response.json({ error: msg }, { status: 500 });
   }

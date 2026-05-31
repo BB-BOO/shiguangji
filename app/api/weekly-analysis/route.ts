@@ -117,6 +117,7 @@ export async function POST(req: Request) {
       systemPrompt: WEEKLY_ANALYSIS_PROMPT,
       userMessage,
       tool: WEEKLY_ANALYSIS_TOOL,
+      onUsage: (u) => { import("@/lib/db").then((m) => m.logApiCall("weekly-analysis", u.prompt_tokens, u.completion_tokens, u.cache_hit_tokens, u.cache_miss_tokens)).catch(() => {}); },
     });
 
     // 合并系统计算的 status + goal_match + LLM 生成的自然语言和目标建议
@@ -130,6 +131,9 @@ export async function POST(req: Request) {
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
+    import("@/lib/db").then(({ logError }) =>
+      logError("weekly-analysis", e instanceof Error ? e.constructor.name : "UnknownError", msg, e instanceof Error ? e.stack : undefined)
+    ).catch(() => {});
     console.error("[weekly-analysis] ERROR:", msg);
     return Response.json({ error: msg }, { status: 500 });
   }

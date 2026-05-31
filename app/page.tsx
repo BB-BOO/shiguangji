@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { fetchDailySummary } from "@/lib/difyService";
-import { loadTodayMeals, loadDailySummaryCache, saveDailySummaryCache, getTodayKey, loadMemory } from "@/lib/storage";
+import { loadTodayMeals, loadDailySummaryCache, saveDailySummaryCache, getTodayKey, loadMemory, syncDailyRating } from "@/lib/storage";
 import type { DailySummaryResponse, MealRecord, NutritionEstimate } from "@/lib/types";
 import { DailyNutritionCard } from "@/components/home/DailyNutritionCard";
 import { DailyResultCard } from "@/components/home/DailyResultCard";
@@ -332,6 +332,7 @@ export default function HomePage() {
                     ratings[getTodayKey()] = satisfied;
                     localStorage.setItem("shiguangji-daily-rating", JSON.stringify(ratings));
                   } catch { /* ignore */ }
+                  syncDailyRating(getTodayKey(), satisfied);
                 }}
               />
             ) : (

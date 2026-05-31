@@ -46,6 +46,7 @@ export async function POST(req: Request) {
       userMessage: query,
       messages: apiMessages,
       tool: INFO_CHECK_TOOL,
+      onUsage: (u) => { import("@/lib/db").then((m) => m.logApiCall("meal-chat", u.prompt_tokens, u.completion_tokens, u.cache_hit_tokens, u.cache_miss_tokens)).catch(() => {}); },
     });
     console.log("[meal-chat] Info check:", JSON.stringify(infoCheck));
 
@@ -55,6 +56,9 @@ export async function POST(req: Request) {
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
+    import("@/lib/db").then(({ logError }) =>
+      logError("meal-chat", e instanceof Error ? e.constructor.name : "UnknownError", msg, e instanceof Error ? e.stack : undefined)
+    ).catch(() => {});
     console.error("[meal-chat] ERROR:", msg);
     return Response.json({ error: msg }, { status: 500 });
   }

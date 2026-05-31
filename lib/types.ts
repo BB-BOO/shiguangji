@@ -45,6 +45,7 @@ export interface MealRecord {
   meal_status: MealStatus;
   conversation_id?: string;
   rating?: boolean;
+  follow_up_count?: number;
   created_at: string; // ISO timestamp
 }
 
@@ -229,10 +230,22 @@ export interface Conversation {
   date: string;
   message_preview: string;
   messages: AssistantMessage[];
+  tool_summary?: string[];
 }
 
 export interface AssistantMessage {
   role: "user" | "ai";
   content: string;
   timestamp: string;
+}
+
+// ========== 错误日志 ==========
+
+export interface ErrorLog {
+  id: number;
+  source: string;
+  error_type: string;
+  message: string;
+  stack?: string;
+  created_at: string;
 }

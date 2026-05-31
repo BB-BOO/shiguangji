@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { analyzeMealChat, runMealAnalysis } from "@/lib/difyService";
-import { createMealId, getTodayKey, loadTodayMeals, saveMeal, loadMemory } from "@/lib/storage";
+import { createMealId, getTodayKey, loadTodayMeals, saveMeal, loadMemory, syncMealRating } from "@/lib/storage";
 import type { MealAnalysisResponse, MealType } from "@/lib/types";
 import { MealNutritionCard } from "@/components/meal/MealNutritionCard";
 import { MealResultCard } from "@/components/meal/MealResultCard";
@@ -41,6 +41,7 @@ export default function MealPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [mealId, setMealId] = useState("");
   const [rating, setRating] = useState<boolean | undefined>(undefined);
+  const [followUpCount, setFollowUpCount] = useState(0);
   const [conversationId, setConversationId] = useState("");
 
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -118,6 +119,7 @@ export default function MealPage() {
 
       if (!checkResult.is_enough) {
         // 信息不足 → 显示追问，等待用户继续输入
+        setFollowUpCount((c) => c + 1);
         setMessages((prev) => [
           ...prev.filter((m) => !m.thinking),
           { role: "ai", content: checkResult.assistant_message },
@@ -177,6 +179,9 @@ export default function MealPage() {
         meal_record_text: analysis.meal_record,
         nutrition_estimate: analysis.nutrition_estimate,
         meal_status: analysis.meal_status,
+        conversation_id: conversationId || undefined,
+        follow_up_count: followUpCount,
+        rating,
         created_at: new Date().toISOString(),
       });
       setSaved(true);
@@ -187,6 +192,11 @@ export default function MealPage() {
 
   const handleRating = (value: boolean) => {
     setRating(value);
+    // 已保存：直接更新 DB
+    if (mealId) {
+      syncMealRating(mealId, value);
+    }
+    // 同步 localStorage（兼容旧逻辑）
     const meals = JSON.parse(localStorage.getItem("shiguangji-meals") || "[]") as Array<{ id: string; rating?: boolean }>;
     const idx = meals.findIndex((m) => m.id === mealId);
     if (idx >= 0) {

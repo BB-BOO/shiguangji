@@ -26,6 +26,7 @@ export default function AssistantPage() {
   const [messages, setMessages] = useState<AssistantMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [progressText, setProgressText] = useState("");
   const [conversationId, setConversationId] = useState("");
   const [showHistory, setShowHistory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -109,6 +110,7 @@ export default function AssistantPage() {
       const decoder = new TextDecoder();
       let buffer = "";
       let fullContent = "";
+      let toolsCalled: string[] = [];
       const extractedItems: Array<{ field: string; value: string }> = [];
 
       while (true) {
@@ -126,13 +128,18 @@ export default function AssistantPage() {
 
           try {
             const event = JSON.parse(json);
-            if (event.type === "text") {
+            if (event.type === "progress") {
+              setProgressText(event.text as string);
+            } else if (event.type === "text") {
+              setProgressText("");
               fullContent += event.content;
               setMessages((prev) => {
                 const updated = [...prev];
                 updated[updated.length - 1] = { ...updated[updated.length - 1], content: fullContent };
                 return updated;
               });
+            } else if (event.type === "tools" && event.tools?.length > 0) {
+              toolsCalled = event.tools;
             } else if (event.type === "memory" && event.extracted?.length > 0) {
               for (const item of event.extracted) {
                 extractedItems.push(item);
@@ -158,6 +165,7 @@ export default function AssistantPage() {
         date: getTodayKey(),
         message_preview: finalMessages[0]?.content.slice(0, 30) || "",
         messages: finalMessages,
+        tool_summary: toolsCalled.length > 0 ? toolsCalled : undefined,
       };
       if (!conversationId) setConversationId(conv.id);
       saveConversation(conv);
@@ -293,11 +301,15 @@ export default function AssistantPage() {
             {loading && (
               <div className="flex justify-start">
                 <div className="rounded-2xl rounded-bl-md bg-white px-5 py-3 shadow-sm">
-                  <span className="flex gap-1">
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-emerald-400" style={{ animationDelay: "0ms" }} />
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-emerald-400" style={{ animationDelay: "150ms" }} />
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-emerald-400" style={{ animationDelay: "300ms" }} />
-                  </span>
+                  {progressText ? (
+                    <p className="text-sm text-emerald-600">{progressText}</p>
+                  ) : (
+                    <span className="flex gap-1">
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-emerald-400" style={{ animationDelay: "0ms" }} />
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-emerald-400" style={{ animationDelay: "150ms" }} />
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-emerald-400" style={{ animationDelay: "300ms" }} />
+                    </span>
+                  )}
                 </div>
               </div>
             )}

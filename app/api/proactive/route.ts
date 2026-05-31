@@ -81,6 +81,7 @@ export async function POST(req: Request) {
       userMessage: userPrompt.join("\n"),
       tool: PROACTIVE_TOOL,
       temperature: 0.8,
+      onUsage: (u) => { import("@/lib/db").then((m) => m.logApiCall("proactive", u.prompt_tokens, u.completion_tokens, u.cache_hit_tokens, u.cache_miss_tokens)).catch(() => {}); },
     });
 
     return Response.json({
@@ -90,6 +91,9 @@ export async function POST(req: Request) {
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
+    import("@/lib/db").then(({ logError }) =>
+      logError("proactive", e instanceof Error ? e.constructor.name : "UnknownError", msg, e instanceof Error ? e.stack : undefined)
+    ).catch(() => {});
     console.error("[proactive] ERROR:", msg);
     // 静默失败，不影响用户体验
     return Response.json({ triggered: false });

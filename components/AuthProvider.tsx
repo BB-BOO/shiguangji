@@ -45,9 +45,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async function load() {
       setUserProfile(await loadProfile());
       setDailyTarget(await loadTargets());
+      setMounted(true);
     }
     load();
-    setMounted(true);
   }, []);
 
   const login = useCallback(async (username: string) => {

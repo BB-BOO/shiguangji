@@ -1,17 +1,18 @@
 # 食光记 · 开发者速查卡
 
 AI 饮食行为分析系统（MVP）。Next.js 15 + React 19 + TypeScript + Tailwind CSS 4。
-数据存 localStorage，AI 通过 Next.js API Routes 调用 DeepSeek API（`deepseek-chat`，Tool Calling 模式）。
+数据存 Supabase（PostgreSQL），AI 通过 Next.js API Routes 调用 DeepSeek API（`deepseek-chat`，Tool Calling 模式）。
 
 ## 架构
 
 ```
 浏览器 (React) ──fetch──> Next.js API Routes ──fetch──> DeepSeek API
-    │
-    └── read/write ──> localStorage
+    │                        │
+    └── Supabase ────────────┘ (PostgreSQL)
+         (lib/db.ts)
 ```
 
-无后端数据库、无 Dify、无第三方 UI 库。图表用内联 SVG。
+localStorage 仅保留 `shiguangji-auth` 和 `shiguangji-user-id`，写入时双写（localStorage 即时响应 + 异步 sync 到 Supabase）。
 
 ## 文件地图
 
@@ -25,7 +26,9 @@ AI 饮食行为分析系统（MVP）。Next.js 15 + React 19 + TypeScript + Tail
 | `lib/agentTools.ts` | AI 助手 Agent 的 8 个工具定义 + 处理函数：get_user_profile、get_today_meals、get_recent_meals、search_diet_knowledge、search_food_nutrition、check_meal_missed、check_goal_status、extract_memory |
 | `lib/proactiveEngine.ts` | 主动触达引擎：频控（日限制/免打扰时段）、7 种事件触发检测（首次问候/漏餐/营养素/建议跟进/里程碑/偏好收集/日常问候） |
 | `lib/nutritionStatus.ts` | 系统计算函数：computeDailyStatus、computeWeeklyStatus、computeGoalMatch — 纯算术，不调 LLM |
-| `lib/storage.ts` | localStorage CRUD，9 个存储键，含每日总结指纹缓存 |
+| `lib/storage.ts` | 业务数据读写封装（读走 Supabase，写双写 localStorage + Supabase），含每日/每周总结指纹缓存 |
+| `lib/db.ts` | Supabase CRUD 实现：注册/登录、9 张表的同步与查询、Admin 统计 |
+| `lib/supabase.ts` | Supabase 客户端初始化（`@supabase/supabase-js`） |
 | `lib/goals.ts` | Mifflin-St Jeor 公式计算 BMR + 初始目标范围 |
 | `lib/seedData.ts` | `seedBalancedWeek()` — 7 天 21 餐模拟数据（28 岁男性 178cm 75kg，内置到首页触发） |
 | `lib/difyService.ts` | 前端 fetch 封装（名存实亡：调用 Next.js API Routes，不依赖 Dify） |
@@ -44,7 +47,7 @@ AI 饮食行为分析系统（MVP）。Next.js 15 + React 19 + TypeScript + Tail
 
 Tool Calling 模式：每个 Route 定义 JSON Schema tool，调用 `callDeepSeekWithTool<T>()`，`tool_choice: "function"` 强制调用，输出从 `tool_calls[0].function.arguments` 解析。
 
-### 页面（8 个路由）
+### 页面（9 个路由）
 
 | 路由 | 页面 | 主要组件 |
 |------|------|---------|
@@ -56,6 +59,7 @@ Tool Calling 模式：每个 Route 定义 JSON Schema tool，调用 `callDeepSee
 | `/history` | 历史记录 | 按日期分组、多选删除 |
 | `/weekly` | 每周分析 | SVG 趋势图、下周目标应用 |
 | `/profile` | 个人资料 | 身体数据、目标模式、目标范围预览 |
+| `/admin` | 后台管理 | 用户统计、餐记录、每日总结、记忆、推送日志 |
 
 ### `components/` — UI 组件
 
@@ -77,19 +81,14 @@ Tool Calling 模式：每个 Route 定义 JSON Schema tool，调用 `callDeepSee
 
 ## 关键约定
 
-### localStorage 键名（9 个）
+### localStorage 键名（2 个，仅保留认证相关）
 
 | 键 | 值 |
 |------|------|
 | `shiguangji-auth` | `"true"` / `"false"` |
-| `shiguangji-profile` | UserProfile JSON |
-| `shiguangji-targets` | DailyTargetRange JSON |
-| `shiguangji-meals` | MealRecord[] JSON |
-| `shiguangji-daily-summary` | `{ date, fingerprint, summary }` |
-| `shiguangji-memory` | MemoryEntry[] JSON（长期记忆） |
-| `shiguangji-proactive-config` | ProactiveConfig JSON（频控配置） |
-| `shiguangji-proactive-log` | ProactiveLog[] JSON（推送日志） |
-| `shiguangji-conversations` | Conversation[] JSON（AI 助手对话历史） |
+| `shiguangji-user-id` | Supabase users.id（UUID） |
+
+业务数据全部走 Supabase，写入时双写 localStorage 作为 UI 快速响应缓存（见 `storage.ts` 中的 `sync()` 函数），但读取均从 Supabase 获取。
 
 ### 每日总结缓存
 
@@ -114,7 +113,7 @@ npm install
 npm run dev     # http://localhost:3000
 ```
 
-需要 `.env.local` 中配置 `DEEPSEEK_API_KEY`。
+需要 `.env.local` 中配置 `DEEPSEEK_API_KEY` 和 Supabase 凭据（`NEXT_PUBLIC_SUPABASE_URL`、`NEXT_PUBLIC_SUPABASE_ANON_KEY`）。
 
 ## 文档
 
