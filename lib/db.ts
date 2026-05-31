@@ -202,6 +202,62 @@ export async function syncConversationToDb(userId: string, conv: Conversation): 
   });
 }
 
+// ========== 读取（替代 localStorage） ==========
+
+export async function loadProfileFromDb(userId: string): Promise<UserProfile | null> {
+  const { data } = await supabase.from("users").select("goal_mode, height_cm, weight_kg, age").eq("id", userId).maybeSingle();
+  if (!data?.goal_mode) return null;
+  return { goal_mode: data.goal_mode as UserProfile["goal_mode"], height_cm: data.height_cm as number, weight_kg: data.weight_kg as number, age: data.age as number };
+}
+
+export async function loadTargetsFromDb(userId: string): Promise<DailyTargetRange | null> {
+  const { data } = await supabase.from("daily_targets").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+  if (!data) return null;
+  return { protein_g: { min: data.protein_min as number, max: data.protein_max as number }, carbs_g: { min: data.carbs_min as number, max: data.carbs_max as number }, vegetables_g: { min: data.vegetables_min as number, max: data.vegetables_max as number }, fat_g: { min: data.fat_min as number, max: data.fat_max as number }, calories_kcal: { min: data.calories_min as number, max: data.calories_max as number } };
+}
+
+export async function loadMealsFromDb(userId: string): Promise<MealRecord[]> {
+  const { data } = await supabase.from("meal_records").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+  return (data ?? []) as unknown as MealRecord[];
+}
+
+export async function loadMealsByDateRangeFromDb(userId: string, startDate: string, endDate: string): Promise<MealRecord[]> {
+  const { data } = await supabase.from("meal_records").select("*").eq("user_id", userId).gte("date", startDate).lte("date", endDate).order("date", { ascending: false });
+  return (data ?? []) as unknown as MealRecord[];
+}
+
+export async function loadDailySummaryFromDb(userId: string, date: string): Promise<DailySummaryResponse | null> {
+  const { data } = await supabase.from("daily_summaries").select("daily_status, feedback, analysis_text").eq("user_id", userId).eq("date", date).maybeSingle();
+  if (!data) return null;
+  return { daily_status: data.daily_status as DailySummaryResponse["daily_status"], feedback: data.feedback as string, analysis_text: data.analysis_text as string };
+}
+
+export async function loadMemoryFromDb(userId: string): Promise<MemoryEntry[]> {
+  const { data } = await supabase.from("memories").select("field, value, source, extracted_at").eq("user_id", userId).order("created_at", { ascending: false });
+  return (data ?? []) as MemoryEntry[];
+}
+
+export async function loadProactiveConfigFromDb(userId: string): Promise<ProactiveConfig> {
+  const { data } = await supabase.from("proactive_configs").select("*").eq("user_id", userId).maybeSingle();
+  return { daily_limit: (data?.daily_limit as number) ?? 2, quiet_start: (data?.quiet_start as string) ?? "22:00", quiet_end: (data?.quiet_end as string) ?? "08:00", master_switch: (data?.master_switch as boolean) ?? true };
+}
+
+export async function loadProactiveLogsFromDb(userId: string): Promise<ProactiveLog[]> {
+  const { data } = await supabase.from("proactive_logs").select("*").eq("user_id", userId).order("pushed_at", { ascending: false });
+  return (data ?? []) as ProactiveLog[];
+}
+
+export async function loadConversationsFromDb(userId: string): Promise<Conversation[]> {
+  const { data } = await supabase.from("conversations").select("*").eq("user_id", userId).order("date", { ascending: false }).limit(20);
+  return (data ?? []) as Conversation[];
+}
+
+export async function loadWeeklySummaryFromDb(userId: string, weekStart: string): Promise<import("./types").WeeklyAnalysisResponse | null> {
+  const { data } = await supabase.from("weekly_summaries").select("*").eq("user_id", userId).eq("week_start", weekStart).maybeSingle();
+  if (!data) return null;
+  return { weekly_status: data.weekly_status as import("./types").WeeklyAnalysisResponse["weekly_status"], goal_match: data.goal_match as import("./types").GoalMatch, feedback: data.feedback as string, analysis_text: data.analysis_text as string, next_week_target: data.next_week_target as import("./types").NextWeekTarget };
+}
+
 // ========== Admin 查询 ==========
 
 type DbRow = Record<string, unknown>;

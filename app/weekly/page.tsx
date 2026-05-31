@@ -180,9 +180,9 @@ export default function WeeklyPage() {
     setReady(true);
   }, [isAuthenticated, userProfile, dailyTarget, router]);
 
-  const prepareData = useCallback(() => {
+  const prepareData = useCallback(async () => {
     const dates = getPast7Dates();
-    const allMeals = loadMealsByDateRange(dates[0], dates[6]);
+    const allMeals = await loadMealsByDateRange(dates[0], dates[6]);
     const data: WeekData[] = dates.map((date) => {
       const meals = allMeals.filter((m) => m.date === date);
       return { date, meals, nutrition: accumulateMeals(meals), label: formatDateLabel(date) };
@@ -221,7 +221,7 @@ export default function WeeklyPage() {
     lastWeekEnd.setDate(lastWeekEnd.getDate() - 1);
     const lwStartStr = lastWeekStart.toISOString().split("T")[0];
     const lwEndStr = lastWeekEnd.toISOString().split("T")[0];
-    const lastWeekMeals = loadMealsByDateRange(lwStartStr, lwEndStr);
+    const lastWeekMeals = await loadMealsByDateRange(lwStartStr, lwEndStr);
     if (lastWeekMeals.length > 0 && dailyTarget) {
       const lwTotals = lastWeekMeals.reduce((acc, m) => ({
         protein_g: acc.protein_g + m.nutrition_estimate.protein_g,
@@ -260,7 +260,7 @@ export default function WeeklyPage() {
         .join(",");
 
       // 检查缓存
-      const cached = loadWeeklySummaryCache(weekStart);
+      const cached = await loadWeeklySummaryCache(weekStart);
       if (cached && cached.fingerprint === allMealIds) {
         setResult(cached.summary);
         setLoading(false);
@@ -296,15 +296,15 @@ export default function WeeklyPage() {
         weekly_avg_fat_g: weekAverages.fat_g,
         weekly_avg_calories_kcal: weekAverages.calories_kcal,
         weekly_meal_records: weeklyMealText,
-        memory: loadMemory().map((e) => `${e.field}：${e.value}`).join("；"),
+        memory: (await loadMemory()).map((e) => `${e.field}：${e.value}`).join("；"),
       });
       setResult(res);
       setApplied(false);
       saveWeeklySummaryCache(weekData[0]?.date || "", allMealIds, res);
       // 将周报关键信息写入 memory
       try {
-        addMemoryEntry({ field: "周报反馈", value: res.feedback, source: "weekly", extracted_at: new Date().toISOString() });
-        addMemoryEntry({ field: "每周目标匹配", value: res.goal_match, source: "weekly", extracted_at: new Date().toISOString() });
+        await addMemoryEntry({ field: "周报反馈", value: res.feedback, source: "weekly", extracted_at: new Date().toISOString() });
+        await addMemoryEntry({ field: "每周目标匹配", value: res.goal_match, source: "weekly", extracted_at: new Date().toISOString() });
       } catch { /* ignore */ }
     } catch (e) {
       console.error("Weekly analysis failed:", e);

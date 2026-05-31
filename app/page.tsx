@@ -66,7 +66,7 @@ export default function HomePage() {
 
   const loadAndAnalyze = useCallback(async () => {
     if (!userProfile || !dailyTarget) return;
-    const todayMeals = loadTodayMeals();
+    const todayMeals = await loadTodayMeals();
     setMeals(todayMeals);
 
     // 加载今日评分
@@ -104,7 +104,7 @@ export default function HomePage() {
       .map((m) => m.id)
       .sort()
       .join(",");
-    const cached = loadDailySummaryCache(todayKey);
+    const cached = await loadDailySummaryCache(todayKey);
     if (cached && cached.fingerprint === fingerprint) {
       setSummary(cached.summary);
       setLoading(false);
@@ -138,7 +138,7 @@ export default function HomePage() {
         fat_g: nutrition.fat_g,
         calories_kcal: nutrition.calories_kcal,
         meal_records: mealRecordsText,
-        memory: loadMemory().map((e) => `${e.field}：${e.value}`).join("；"),
+        memory: (await loadMemory()).map((e) => `${e.field}：${e.value}`).join("；"),
       });
       setSummary(result);
       saveDailySummaryCache(todayKey, fingerprint, result);

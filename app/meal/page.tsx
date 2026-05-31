@@ -63,14 +63,17 @@ export default function MealPage() {
 
   useEffect(() => {
     if (!ready) return;
-    const meals = loadTodayMeals();
-    // 加餐允许多次记录，不纳入重复检查
-    const recorded = new Set(
-      meals.filter((m) => m.meal_type !== "加餐").map((m) => m.meal_type as MealType),
-    );
-    setTodayRecordedTypes(recorded);
-    const firstAvailable = MEAL_TYPES.find((t) => !recorded.has(t));
-    if (firstAvailable) setMealType(firstAvailable);
+    async function load() {
+      const meals = await loadTodayMeals();
+      // 加餐允许多次记录，不纳入重复检查
+      const recorded = new Set(
+        meals.filter((m) => m.meal_type !== "加餐").map((m) => m.meal_type as MealType),
+      );
+      setTodayRecordedTypes(recorded);
+      const firstAvailable = MEAL_TYPES.find((t) => !recorded.has(t));
+      if (firstAvailable) setMealType(firstAvailable);
+    }
+    load();
   }, [ready]);
 
   if (!ready) {
@@ -144,7 +147,7 @@ export default function MealPage() {
         weight_kg: userProfile?.weight_kg,
         height_cm: userProfile?.height_cm,
         age: userProfile?.age,
-      }, loadMemory().map((e) => `${e.field}：${e.value}`).join("；"));
+      }, (await loadMemory()).map((e) => `${e.field}：${e.value}`).join("；"));
 
       if (analysis?.nutrition_estimate) {
         setMessages((prev) => prev.filter((m) => !m.thinking));

@@ -42,8 +42,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setIsAuthenticated(getAuth());
-    setUserProfile(loadProfile());
-    setDailyTarget(loadTargets());
+    async function load() {
+      setUserProfile(await loadProfile());
+      setDailyTarget(await loadTargets());
+    }
+    load();
     setMounted(true);
   }, []);
 

@@ -61,14 +61,17 @@ export default function HistoryPage() {
 
   useEffect(() => {
     if (!ready) return;
-    const allMeals = loadMeals();
-    setGroups(groupByDate(allMeals));
+    async function load() {
+      const allMeals = await loadMeals();
+      setGroups(groupByDate(allMeals));
+    }
+    load();
   }, [ready]);
 
   // Re-sync on focus
   useEffect(() => {
     if (!ready) return;
-    const onFocus = () => setGroups(groupByDate(loadMeals()));
+    const onFocus = async () => setGroups(groupByDate(await loadMeals()));
     window.addEventListener("focus", onFocus);
     window.addEventListener("storage", onFocus);
     return () => {
@@ -85,10 +88,11 @@ export default function HistoryPage() {
     });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (selectedIds.size === 0) return;
     deleteMeals(Array.from(selectedIds));
-    setGroups(groupByDate(loadMeals()));
+    const allMeals = await loadMeals();
+    setGroups(groupByDate(allMeals));
     setSelectedIds(new Set());
     setShowConfirm(false);
     setEditMode(false);
@@ -100,11 +104,12 @@ export default function HistoryPage() {
     setEditText(meal.meal_record_text);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editingMeal || !editText.trim()) return;
     const updated: MealRecord = { ...editingMeal, meal_record_text: editText.trim() };
     saveMeal(updated);
-    setGroups(groupByDate(loadMeals()));
+    const allMeals = await loadMeals();
+    setGroups(groupByDate(allMeals));
     setEditingMeal(null);
   };
 

@@ -11,11 +11,11 @@ interface GuideCard {
   action: string;
 }
 
-function buildCards(): GuideCard[] {
-  const todayMeals = loadTodayMeals();
+async function buildCards(): Promise<GuideCard[]> {
+  const todayMeals = await loadTodayMeals();
   const mainMeals = todayMeals.filter((m) => m.meal_type !== "加餐");
   const mainCount = mainMeals.length;
-  const allMeals = loadMeals();
+  const allMeals = await loadMeals();
   const totalMeals = allMeals.length;
   const totalDays = new Set(allMeals.map((m) => m.date)).size;
 
@@ -79,8 +79,8 @@ export function ColdStartGuide() {
   const [index, setIndex] = useState(0);
   const [smooth, setSmooth] = useState(true);
 
-  const refresh = useCallback(() => {
-    const newCards = buildCards();
+  const refresh = useCallback(async () => {
+    const newCards = await buildCards();
     setCards(newCards);
     if (newCards.length === 0) return;
     setIndex((prev) => (prev >= newCards.length ? 0 : prev));
@@ -116,14 +116,13 @@ export function ColdStartGuide() {
         setSmooth(false);
         setIndex(0);
         requestAnimationFrame(() => setSmooth(true));
-      }, 500); // wait for CSS transition to complete
+      }, 500);
       return () => clearTimeout(timeout);
     }
   }, [index, cards.length]);
 
   if (cards.length === 0) return null;
 
-  // Clone first card at the end for seamless upward scroll loop
   const loopCards = cards.length > 1 ? [...cards, cards[0]] : cards;
 
   return (

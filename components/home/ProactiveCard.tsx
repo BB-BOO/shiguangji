@@ -27,7 +27,7 @@ export function ProactiveCard() {
     if (!userProfile || !dailyTarget) return;
 
     // 检查今天是否已经显示过
-    const logs = loadProactiveLogs();
+    const logs = await loadProactiveLogs();
     const today = new Date().toISOString().split("T")[0];
     const todayDismissed = logs.some(
       (l) => l.pushed_at.startsWith(today) && l.dismissed,
@@ -45,15 +45,15 @@ export function ProactiveCard() {
 
     setLoading(true);
     try {
-      const todayMeals = loadTodayMeals();
-      const allMeals = loadMeals();
+      const todayMeals = await loadTodayMeals();
+      const allMeals = await loadMeals();
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       const cutoff = `${sevenDaysAgo.getFullYear()}-${String(sevenDaysAgo.getMonth() + 1).padStart(2, "0")}-${String(sevenDaysAgo.getDate()).padStart(2, "0")}`;
       const recentMeals = allMeals.filter((m) => m.date >= cutoff);
 
-      const memory = loadMemory();
-      const config = loadProactiveConfig();
+      const memory = await loadMemory();
+      const config = await loadProactiveConfig();
 
       const res = await fetch("/api/proactive", {
         method: "POST",
@@ -86,7 +86,7 @@ export function ProactiveCard() {
           content: `💬 ${log.message}`,
           timestamp: log.pushed_at,
         };
-        const convs = loadConversations();
+        const convs = await loadConversations();
         const todayConv = convs.find((c) => c.date === getTodayKey());
         if (todayConv) {
           todayConv.messages.push(aiMsg);

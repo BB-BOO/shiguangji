@@ -49,7 +49,7 @@ export function MemoryManager() {
   const [expanded, setExpanded] = useState<string | null>(null);
 
   useEffect(() => {
-    setEntries(loadMemory());
+    loadMemory().then(setEntries);
   }, []);
 
   const classified = classifyEntries(entries);
@@ -57,7 +57,7 @@ export function MemoryManager() {
 
   const handleDelete = (field: string, value: string) => {
     deleteMemoryEntry(field, value);
-    setEntries(loadMemory());
+    loadMemory().then(setEntries);
   };
 
   return (

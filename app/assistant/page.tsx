@@ -39,13 +39,16 @@ export default function AssistantPage() {
     if (!userProfile || !dailyTarget) { router.replace("/profile"); return; }
 
     // 加载今天对话
-    const convs = loadConversations();
-    setConversations(convs);
-    const todayConv = convs.find((c) => c.date === getTodayKey());
-    if (todayConv) {
-      setMessages(todayConv.messages);
-      setConversationId(todayConv.id);
+    async function init() {
+      const convs = await loadConversations();
+      setConversations(convs);
+      const todayConv = convs.find((c) => c.date === getTodayKey());
+      if (todayConv) {
+        setMessages(todayConv.messages);
+        setConversationId(todayConv.id);
+      }
     }
+    init();
   }, [isAuthenticated, userProfile, dailyTarget, router]);
 
   // 滚动到底部
@@ -53,14 +56,14 @@ export default function AssistantPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const buildContext = useCallback((): AgentContext => {
-    const todayMeals = loadTodayMeals();
-    const allMeals = loadMeals();
+  const buildContext = useCallback(async (): Promise<AgentContext> => {
+    const todayMeals = await loadTodayMeals();
+    const allMeals = await loadMeals();
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const cutoff = `${sevenDaysAgo.getFullYear()}-${String(sevenDaysAgo.getMonth() + 1).padStart(2, "0")}-${String(sevenDaysAgo.getDate()).padStart(2, "0")}`;
     const recentMeals = allMeals.filter((m) => m.date >= cutoff);
-    const memory = loadMemory();
+    const memory = await loadMemory();
     const memoryText = memory.length > 0
       ? memory.map((e) => `- ${e.field}：${e.value}`).join("\n")
       : "";
@@ -84,7 +87,7 @@ export default function AssistantPage() {
     setLastFailedMessage("");
 
     try {
-      const context = buildContext();
+      const context = await buildContext();
       const res = await fetch("/api/assistant/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -133,7 +136,7 @@ export default function AssistantPage() {
             } else if (event.type === "memory" && event.extracted?.length > 0) {
               for (const item of event.extracted) {
                 extractedItems.push(item);
-                addMemoryEntry({
+                await addMemoryEntry({
                   field: item.field,
                   value: item.value,
                   source: conversationId || "new",
@@ -167,8 +170,8 @@ export default function AssistantPage() {
     }
   }, [messages, loading, conversationId, buildContext]);
 
-  const loadConversation = (id: string) => {
-    const convs = loadConversations();
+  const loadConversation = async (id: string) => {
+    const convs = await loadConversations();
     const conv = convs.find((c) => c.id === id);
     if (conv) {
       setMessages(conv.messages);
@@ -204,7 +207,7 @@ export default function AssistantPage() {
             </svg>
           </button>
           <button
-            onClick={() => { setConversations(loadConversations()); setShowHistory(!showHistory); }}
+            onClick={() => { loadConversations().then(setConversations); setShowHistory(!showHistory); }}
             className="rounded-xl p-2 text-[var(--color-muted)] hover:bg-white/80 transition-colors"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">

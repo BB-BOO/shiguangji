@@ -13,7 +13,7 @@ export function AISettings() {
   });
 
   useEffect(() => {
-    setConfig(loadProactiveConfig());
+    loadProactiveConfig().then(setConfig);
   }, []);
 
   const update = (partial: Partial<ProactiveConfig>) => {
